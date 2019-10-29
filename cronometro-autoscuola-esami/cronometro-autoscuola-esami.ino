@@ -1,30 +1,34 @@
 #include "Arduino.h"
 #include "heltec.h"
-#include "src/utils/images/logo.h"
-#include "src/server/server.h"
-#include "src/client/client.h"
+#include "src/utils/logo.h"
+#include "src/timer/timer.h"
 
-#define BAND 868E6
+#define BAND 915E6
 
+#define SERVER_SWITCH GPIO_NUM_36
+#define SERVER_SWITCH_STATE HIGH
+
+Timer timer;
 
 void setup() {
-  Heltec.begin(true, true, true, true, BAND);
-  Heltec.display -> clear();
-  Heltec.display -> drawXbm(0, 0, logo_width, logo_height, logo_bits);
-  Heltec.display -> display();
-  delay(2000);
-  Heltec.display -> clear();
-  Heltec.display -> display();
+    pinMode(SERVER_SWITCH, INPUT);
 
-  int buttonState = digitalRead(GPIO_NUM_0);
-  if (buttonState == LOW) {
-    TimerServer server;
-  } else {
-    TimerClient client;
-  }
-  delay(300);
-  
+    Heltec.begin(true, true, false, true, BAND);
+    Heltec.display -> clear();
+    Heltec.display -> drawXbm(0, 0, logo_width, logo_height, logo_bits);
+    Heltec.display -> display();
+    delay(2000);
+    Heltec.display -> clear();
+    Heltec.display -> display();
+
+    int buttonState = digitalRead(SERVER_SWITCH);
+    if (buttonState == SERVER_SWITCH_STATE) {
+        timer.init(true);
+    } else {
+        timer.init(false);
+    }
 }
 
 void loop() {
+    timer.loop();
 }
