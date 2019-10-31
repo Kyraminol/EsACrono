@@ -1,5 +1,6 @@
-#include "Arduino.h"
-#include "heltec.h"
+#include <Arduino.h>
+#include <heltec.h>
+
 #include "src/utils/logo.h"
 #include "src/timer/timer.h"
 
@@ -11,9 +12,11 @@
 Timer timer;
 
 void setup() {
+    Serial.begin(115200);
+    
     pinMode(SERVER_SWITCH, INPUT);
 
-    Heltec.begin(true, true, false, true, BAND);
+    Heltec.begin(true, true, true, true, BAND);
     Heltec.display -> clear();
     Heltec.display -> drawXbm(0, 0, logo_width, logo_height, logo_bits);
     Heltec.display -> display();
@@ -23,9 +26,9 @@ void setup() {
 
     int buttonState = digitalRead(SERVER_SWITCH);
     if (buttonState == SERVER_SWITCH_STATE) {
-        timer.init(true);
+        timer.setup(true);
     } else {
-        timer.init(false);
+        timer.setup(false);
     }
 }
 
