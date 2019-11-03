@@ -7,6 +7,11 @@ class TimerServer{
         TimerServer();
         void setup();
         void loop();
+    private:
+        int timers[2] = {0, 0};
+        float results[2];
+        void timerStart(int timer);
+        void timerStop(int timer);
 };
 
 #endif
