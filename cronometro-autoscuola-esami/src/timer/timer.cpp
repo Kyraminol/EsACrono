@@ -24,5 +24,5 @@ void Timer::setup(bool serverMode){
 };
 
 void Timer::loop(){
-
+    isServer ? server.loop() : client.loop();
 };

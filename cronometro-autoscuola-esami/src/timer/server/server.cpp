@@ -16,6 +16,7 @@ void TimerServer::setup(String server, String client){
     serverName = server;
     clientName = client;
     SerialBT.begin(serverName.c_str());
+    WiFi.softAP(serverName.c_str());
 };
 
 void TimerServer::loop(){
