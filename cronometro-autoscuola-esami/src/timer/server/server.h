@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <BluetoothSerial.h>
+#include <ESPAsyncWebServer.h>
 
 
 class TimerServer{
@@ -19,6 +20,7 @@ class TimerServer{
         String serverName;
         String clientName;
         BluetoothSerial SerialBT;
+        AsyncWebServer webserver;
 };
 
 #endif

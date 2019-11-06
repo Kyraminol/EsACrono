@@ -8,7 +8,7 @@ TimerClient::TimerClient() = default;
 
 void TimerClient::setup(String server, String client){
     if(isSetup){
-        Serial.println("[Timer] Already setup");
+        Serial.println("[Client] Already setup");
         return;
     };
     isSetup = true;
