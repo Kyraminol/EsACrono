@@ -15,6 +15,8 @@ class TimerClient{
         String clientName;
         String serverName;
         BluetoothSerial SerialBT;
+        
+        void sendRequest(String path);
 };
 
 #endif
