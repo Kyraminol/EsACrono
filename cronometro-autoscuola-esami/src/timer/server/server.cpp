@@ -20,6 +20,23 @@ void TimerServer::setup(String server, String client){
     SerialBT.begin(serverName.c_str());
     WiFi.softAP(serverName.c_str());
     
+    webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
+        Serial.println("received");
+        if(request->hasParam("r")){
+            AsyncWebParameter* r = request->getParam("r");
+            Serial.printf("GET[%s]: %s\n", r->name().c_str(), r->value().c_str());
+        }
+        if(request->hasParam("t")){
+            AsyncWebParameter* t = request->getParam("t");
+            Serial.printf("GET[%s]: %s\n", t->name().c_str(), t->value().c_str());
+        }
+        if(request->hasParam("s")){
+            AsyncWebParameter* s = request->getParam("s");
+            Serial.printf("GET[%s]: %s\n", s->name().c_str(), s->value().c_str());
+        }
+        request->send(200, "text/plain", "o");
+    });
+
     webserver.on("/api/v1/timer/1/start", HTTP_GET, [this](AsyncWebServerRequest *request){
         timerStart(0);
         Serial.println("Start1");

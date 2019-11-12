@@ -15,6 +15,9 @@ class TimerClient{
         String clientName;
         String serverName;
         BluetoothSerial SerialBT;
+        int n;
+        int s;
+        String endpoint = "/api/v1/";
         
         void sendRequest(String path);
 };

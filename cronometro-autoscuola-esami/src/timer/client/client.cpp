@@ -16,28 +16,33 @@ void TimerClient::setup(String server, String client){
     isSetup = true;
     serverName = server;
     clientName = client;
+    n = digitalRead(GPIO_NUM_37);
+    s = digitalRead(GPIO_NUM_38);
     SerialBT.begin(clientName.c_str());
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoConnect(true);
     WiFi.begin(serverName.c_str());
-    for(int i = 0; i < 10 && WiFi.status() == WL_DISCONNECTED; i++){
+    for(int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++){
         delay(500);
+    }
+    if(WiFi.status() == WL_CONNECTED){
+        Serial.println("send1");
+        String path = endpoint + "timer?r=1";
+        n == LOW ? path += "&t=0" : path += "&t=1";
+        s == LOW ? path += "&s=0" : path += "&s=1";
+        sendRequest(path);
     }
 };
 
 void TimerClient::loop(){
     if (digitalRead(GPIO_NUM_39) == LOW){
-        digitalWrite(25,HIGH);
-        int n = digitalRead(GPIO_NUM_37);
-        int s = digitalRead(GPIO_NUM_38);
-        String path = "/api/v1/timer/";
-        n == LOW ? path += "1/" : path += "2/";
-        s == LOW ? path += "start" : path += "stop";
+        String path = endpoint + "timer?r=1";
+        n == LOW ? path += "&t=0" : path += "&t=1";
+        s == LOW ? path += "&s=0" : path += "&s=1";
         Serial.println(path);
         sendRequest(path);
         delay(1000);
-        digitalWrite(25,LOW);
     }
     delay(20);
 };
@@ -59,5 +64,6 @@ void TimerClient::sendRequest(String path){
     } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", client.errorToString(httpCode).c_str());
     }
+    delay(100);
     client.end();
 };
