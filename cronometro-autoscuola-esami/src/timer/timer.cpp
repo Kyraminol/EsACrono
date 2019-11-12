@@ -13,6 +13,9 @@ void Timer::setup(bool serverMode){
     };
     isSetup = true;
     isServer = serverMode;
+    pinMode(GPIO_NUM_37, INPUT);
+    pinMode(GPIO_NUM_38, INPUT);
+    pinMode(GPIO_NUM_39, INPUT);
     if(isServer){
         Serial.println("[Timer] Starting as server...");
         server.setup(serverName, clientName);

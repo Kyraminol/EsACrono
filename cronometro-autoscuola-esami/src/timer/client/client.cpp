@@ -24,13 +24,11 @@ void TimerClient::setup(String server, String client){
     for(int i = 0; i < 10 && WiFi.status() == WL_DISCONNECTED; i++){
         delay(500);
     }
-    pinMode(GPIO_NUM_37, INPUT);
-    pinMode(GPIO_NUM_38, INPUT);
-    pinMode(GPIO_NUM_39, INPUT);
 };
 
 void TimerClient::loop(){
     if (digitalRead(GPIO_NUM_39) == LOW){
+        digitalWrite(25,HIGH);
         int n = digitalRead(GPIO_NUM_37);
         int s = digitalRead(GPIO_NUM_38);
         String path = "/api/v1/timer/";
@@ -39,6 +37,7 @@ void TimerClient::loop(){
         Serial.println(path);
         sendRequest(path);
         delay(1000);
+        digitalWrite(25,LOW);
     }
     delay(20);
 };
