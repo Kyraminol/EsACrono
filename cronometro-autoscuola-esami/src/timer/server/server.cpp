@@ -21,7 +21,11 @@ void TimerServer::setup(String server, String client){
     WiFi.softAP(serverName.c_str());
     
     webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
-        Serial.println("received");
+        int headers = request->headers();
+        for(int i=0;i<headers;i++){
+            AsyncWebHeader* h = request->getHeader(i);
+            Serial.printf("HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
+        }
         if(request->hasParam("r")){
             AsyncWebParameter* r = request->getParam("r");
             Serial.printf("GET[%s]: %s\n", r->name().c_str(), r->value().c_str());
@@ -34,40 +38,10 @@ void TimerServer::setup(String server, String client){
             AsyncWebParameter* s = request->getParam("s");
             Serial.printf("GET[%s]: %s\n", s->name().c_str(), s->value().c_str());
         }
-        request->send(200, "text/plain", "o");
-    });
-
-    webserver.on("/api/v1/timer/1/start", HTTP_GET, [this](AsyncWebServerRequest *request){
-        timerStart(0);
-        Serial.println("Start1");
-        request->send(200, "text/plain", "START1");
-    });
-    webserver.on("/api/v1/timer/1/stop", HTTP_GET, [this](AsyncWebServerRequest *request){
-        timerStop(0);
-        String result = String(results[0], 1);
-        Serial.print("Stop1: ");
-        Serial.println(results[0]);
-        request->send(200, "text/plain", "STOP1: " + result);
-    });
-    webserver.on("/api/v1/timer/1", HTTP_GET, [this](AsyncWebServerRequest *request){
-        request->send(200, "text/plain", "RESULT1");
-    });
-
-    webserver.on("/api/v1/timer/2/start", HTTP_GET, [this](AsyncWebServerRequest *request){
-        timerStart(1);
-        Serial.println("Start2");
-        request->send(200, "text/plain", "START2");
-    });
-    webserver.on("/api/v1/timer/2/stop", HTTP_GET, [this](AsyncWebServerRequest *request){
-        timerStop(1);
-        Serial.print("Stop2: ");
-        Serial.println(results[1]);
-        String result = String(results[1], 1);
-        request->send(200, "text/plain", "Stop2: " + result);
-    });
-    webserver.on("/api/v1/timer/2", HTTP_GET, [this](AsyncWebServerRequest *request){
-        String result = String(results[1], 1);
-        request->send(200, "text/plain", result);
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Ok");
+        response->addHeader("Server", "ESP Async Web Server");
+        response->addHeader("Connection", "keep-alive");
+        request->send(response);
     });
     
     webserver.begin();

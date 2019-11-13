@@ -3,12 +3,14 @@
 
 #include <Arduino.h>
 #include <BluetoothSerial.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 
 
 class TimerClient{
     public:
         TimerClient();
-        void setup(String server, String client);
+        void setup(String server_name, String client_name);
         void loop();
     private:
         bool isSetup = false;
@@ -18,6 +20,10 @@ class TimerClient{
         int n;
         int s;
         String endpoint = "/api/v1/";
+        WiFiClient client;
+        HTTPClient http;
+
+
         
         void sendRequest(String path);
 };
