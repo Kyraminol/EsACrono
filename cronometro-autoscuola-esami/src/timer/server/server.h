@@ -21,6 +21,7 @@ class TimerServer{
         String clientName;
         BluetoothSerial SerialBT;
         AsyncWebServer webserver;
+        void receiveLoRa();
 };
 
 #endif

@@ -26,6 +26,7 @@ class TimerClient{
 
         
         void sendRequest(String path);
+        void sendLoRa(String msg);
 };
 
 #endif

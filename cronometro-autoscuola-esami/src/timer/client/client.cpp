@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <BluetoothSerial.h>
 #include <Wifi.h>
+#include <heltec.h>
 
 
 TimerClient::TimerClient() = default;
@@ -27,10 +28,10 @@ void TimerClient::setup(String server_name, String client_name){
     }
     http.setReuse(true);
     if(WiFi.status() == WL_CONNECTED){
-        Serial.println("send1");
         String path = endpoint + "timer?r=1";
         n == LOW ? path += "&t=0" : path += "&t=1";
         s == LOW ? path += "&s=0" : path += "&s=1";
+        sendLoRa(path);
         sendRequest(path);
     }
 };
@@ -69,4 +70,10 @@ void TimerClient::sendRequest(String path){
         }
         http.end();
     }
+};
+
+void TimerClient::sendLoRa(String msg){
+    LoRa.beginPacket();
+    LoRa.print(msg);
+    LoRa.endPacket();
 };

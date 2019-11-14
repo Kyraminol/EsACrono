@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <BluetoothSerial.h>
 #include <ESPAsyncWebServer.h>
+#include <heltec.h>
 
 
 TimerServer::TimerServer() : webserver(80){  
@@ -48,7 +49,7 @@ void TimerServer::setup(String server, String client){
 };
 
 void TimerServer::loop(){
-
+    receiveLoRa();
 };
 
 void TimerServer::timerStart(int timer){
@@ -63,4 +64,21 @@ void TimerServer::timerStop(int timer){
         timers[timer] = 0;
         Serial.println(results[timer]);
     };
+};
+
+void TimerServer::receiveLoRa(){
+    if(LoRa.parsePacket() == 0) return;
+
+    String incoming = "";
+ 
+    while (LoRa.available())
+    {
+    incoming += (char)LoRa.read();
+    }
+
+    Serial.println("-- LoRa --");
+    Serial.println("Message: " + incoming);
+    Serial.println("RSSI: " + String(LoRa.packetRssi()));
+    Serial.println("Snr: " + String(LoRa.packetSnr()));
+    Serial.println();
 };
