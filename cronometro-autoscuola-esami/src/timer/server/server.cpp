@@ -69,15 +69,14 @@ void TimerServer::timerStop(int timer){
 void TimerServer::receiveLoRa(){
     if(LoRa.parsePacket() == 0) return;
 
-    String incoming = "";
+    String msg = "";
  
-    while (LoRa.available())
-    {
-    incoming += (char)LoRa.read();
+    while (LoRa.available()){
+        msg += (char)LoRa.read();
     }
 
     Serial.println("-- LoRa --");
-    Serial.println("Message: " + incoming);
+    Serial.println("Message: " + msg);
     Serial.println("RSSI: " + String(LoRa.packetRssi()));
     Serial.println("Snr: " + String(LoRa.packetSnr()));
     Serial.println();

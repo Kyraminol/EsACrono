@@ -27,13 +27,13 @@ void TimerClient::setup(String server_name, String client_name){
         delay(500);
     }
     http.setReuse(true);
+    String msg = "r=1";
+    n == LOW ? msg += "&t=0" : msg += "&t=1";
+    s == LOW ? msg += "&s=0" : msg += "&s=1";
     if(WiFi.status() == WL_CONNECTED){
-        String path = endpoint + "timer?r=1";
-        n == LOW ? path += "&t=0" : path += "&t=1";
-        s == LOW ? path += "&s=0" : path += "&s=1";
-        sendLoRa(path);
-        sendRequest(path);
+        sendRequest(endpoint + "timer?" + msg);
     }
+    sendLoRa(msg);
 };
 
 void TimerClient::loop(){
