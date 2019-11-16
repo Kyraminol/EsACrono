@@ -15,13 +15,13 @@ class TimerServer{
         bool isSetup = false;
         int timers[2] = {0, 0};
         float results[2];
-        void timerStart(int timer);
-        void timerStop(int timer);
+        void timerSet(int timer, bool stop);
         String serverName;
         String clientName;
         BluetoothSerial SerialBT;
         AsyncWebServer webserver;
         void receiveLoRa();
+        void clientRegister(int timer, bool stop);
 };
 
 #endif

@@ -27,20 +27,25 @@ void TimerServer::setup(String server, String client){
             AsyncWebHeader* h = request->getHeader(i);
             Serial.printf("HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
         }
-        if(request->hasParam("r")){
-            AsyncWebParameter* r = request->getParam("r");
-            Serial.printf("GET[%s]: %s\n", r->name().c_str(), r->value().c_str());
+        int params = request->params();
+        for(int i=0;i<params;i++){
+            AsyncWebParameter* p = request->getParam(i);
+            Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
         }
-        if(request->hasParam("t")){
-            AsyncWebParameter* t = request->getParam("t");
-            Serial.printf("GET[%s]: %s\n", t->name().c_str(), t->value().c_str());
+
+        if(!request->hasParam("t") && !request->hasParam("s")){
+            request->send(400);
+            return;
         }
-        if(request->hasParam("s")){
-            AsyncWebParameter* s = request->getParam("s");
-            Serial.printf("GET[%s]: %s\n", s->name().c_str(), s->value().c_str());
-        }
+        int timer;
+        bool stop;
+        request->getParam("t")->value() == "0" ? timer = 0 : timer = 1;
+        request->getParam("s")->value() == "0" ? stop = false : stop = true;
+        
+        request->hasParam("r") ? clientRegister(timer, stop) : timerSet(timer, stop);
+
         AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Ok");
-        response->addHeader("Server", "ESP Async Web Server");
+        response->addHeader("Server", "TimerServer");
         response->addHeader("Connection", "keep-alive");
         request->send(response);
     });
@@ -52,18 +57,18 @@ void TimerServer::loop(){
     receiveLoRa();
 };
 
-void TimerServer::timerStart(int timer){
-    if(timers[timer] == 0){
-        timers[timer] = millis();
-    };
-};
-
-void TimerServer::timerStop(int timer){
-    if(timers[timer] > 0){
-        results[timer] = (float)(millis() - timers[timer]) / 1000.0;
-        timers[timer] = 0;
-        Serial.println(results[timer]);
-    };
+void TimerServer::timerSet(int timer, bool stop){
+    if(!stop){
+        if(timers[timer] == 0){
+            timers[timer] = millis();
+        };
+    } else {
+        if(timers[timer] > 0){
+            results[timer] = (float)(millis() - timers[timer]) / 1000.0;
+            timers[timer] = 0;
+            Serial.println(results[timer]);
+        };
+    }
 };
 
 void TimerServer::receiveLoRa(){
@@ -80,4 +85,8 @@ void TimerServer::receiveLoRa(){
     Serial.println("RSSI: " + String(LoRa.packetRssi()));
     Serial.println("Snr: " + String(LoRa.packetSnr()));
     Serial.println();
+};
+
+void TimerServer::clientRegister(int timer, bool stop){
+
 };
