@@ -8,13 +8,13 @@
 
 
 TimerServer::TimerServer() : webserver(80){  
-};
+}
 
 void TimerServer::setup(String server, String client){
     if(isSetup){
         Serial.println("[Server] Already setup");
         return;
-    };
+    }
     isSetup = true;
     serverName = server;
     clientName = client;
@@ -37,6 +37,7 @@ void TimerServer::setup(String server, String client){
             request->send(400);
             return;
         }
+        
         int timer;
         bool stop;
         request->getParam("t")->value() == "0" ? timer = 0 : timer = 1;
@@ -51,25 +52,25 @@ void TimerServer::setup(String server, String client){
     });
     
     webserver.begin();
-};
+}
 
 void TimerServer::loop(){
     receiveLoRa();
-};
+}
 
 void TimerServer::timerSet(int timer, bool stop){
     if(!stop){
         if(timers[timer] == 0){
             timers[timer] = millis();
-        };
+        }
     } else {
         if(timers[timer] > 0){
             results[timer] = (float)(millis() - timers[timer]) / 1000.0;
             timers[timer] = 0;
             Serial.println(results[timer]);
-        };
+        }
     }
-};
+}
 
 void TimerServer::receiveLoRa(){
     if(LoRa.parsePacket() == 0) return;
@@ -85,8 +86,29 @@ void TimerServer::receiveLoRa(){
     Serial.println("RSSI: " + String(LoRa.packetRssi()));
     Serial.println("Snr: " + String(LoRa.packetSnr()));
     Serial.println();
+
+    int timer = -1;
+    bool stop = false, registerClient = false;
+    size_t start = 0;
+    while (start < msg.length()){
+        int end = msg.indexOf('&', start);
+        if (end < 0) end = msg.length();
+        int equal = msg.indexOf('=', start);
+        if (equal < 0 || equal > end) equal = end;
+        String name = msg.substring(start, equal);
+        String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
+        start = end + 1;
+        if(name == "t")
+            value == "0" ? timer = 0 : timer = 1;
+        else if(name == "s")
+            value == "0" ? stop = false : stop = true;
+        else if(name == "r")
+            value == "0" ? registerClient = false : registerClient = true;
+    }
+
+    registerClient == true ? clientRegister(timer, stop) : timerSet(timer, stop);
 };
 
 void TimerServer::clientRegister(int timer, bool stop){
 
-};
+}

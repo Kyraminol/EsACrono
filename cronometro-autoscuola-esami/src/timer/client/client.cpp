@@ -12,7 +12,7 @@ void TimerClient::setup(String server_name, String client_name){
     if(isSetup){
         Serial.println("[Client] Already setup");
         return;
-    };
+    }
     isSetup = true;
     serverName = server_name;
     clientName = client_name;
@@ -34,7 +34,7 @@ void TimerClient::setup(String server_name, String client_name){
         sendRequest(endpoint + "timer?" + msg);
     }
     sendLoRa(msg);
-};
+}
 
 void TimerClient::loop(){
     if (digitalRead(GPIO_NUM_39) == LOW){
@@ -45,7 +45,7 @@ void TimerClient::loop(){
         sendRequest(path);
     }
     delay(20);
-};
+}
 
 void TimerClient::sendRequest(String path){
     const char * headerkeys[] = {"Connection"};
@@ -70,10 +70,10 @@ void TimerClient::sendRequest(String path){
         }
         http.end();
     }
-};
+}
 
 void TimerClient::sendLoRa(String msg){
     LoRa.beginPacket();
     LoRa.print(msg);
     LoRa.endPacket();
-};
+}
