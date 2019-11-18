@@ -24,11 +24,11 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _pingInterval = pingInterval;
     _t = digitalRead(TIMER_N_PIN);
     _s = digitalRead(START_STOP_SWITCH_PIN);
-    _SerialBT.begin(clientName.c_str());
+    _SerialBT.begin(_clientName.c_str());
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
-    WiFi.setAutoConnect(true);
-    WiFi.begin(serverName.c_str());
+    WiFi.setAutoReconnect(true);
+    WiFi.begin(_serverName.c_str());
     for(int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++){
         delay(500);
     }
@@ -50,6 +50,7 @@ void TimerClient::loop(){
 }
 
 void TimerClient::sendRequest(String path){
+    if(WiFi.status() != WL_CONNECTED) return;
     const char * headerkeys[] = {"Connection"};
     size_t headerkeyssize = sizeof(headerkeys)/sizeof(char*);
     if(_http.begin(_client, "192.168.4.1", 80, path)){
@@ -79,14 +80,10 @@ void TimerClient::sendLoRa(String msg){
 
 void TimerClient::sendPing(){
     if(_lastPing > 0 && _lastPing + _pingInterval > millis()) return;
-    Serial.println(_lastPing);
-    Serial.println(millis());
     _lastPing = millis();
     String msg = "p=1";
     _t == LOW ? msg += "&t=0" : msg += "&t=1";
     _s == LOW ? msg += "&s=0" : msg += "&s=1";
     sendLoRa(msg);
-    if(WiFi.status() == WL_CONNECTED){
-        sendRequest(_endpoint + "timer?" + msg);
-    }
+    sendRequest(_endpoint + "timer?" + msg);
 }

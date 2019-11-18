@@ -20,6 +20,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     _clientName = clientName;
     _pingInterval = pingInterval;
     _SerialBT.begin(_serverName.c_str());
+    WiFi.mode(WIFI_AP);
     WiFi.softAP(_serverName.c_str());
     
     _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -46,7 +47,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
         
         request->hasParam("p") ? clientPinged(timer, stop) : timerSet(timer, stop);
 
-        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Ok");
+        AsyncWebServerResponse *response = request->beginResponse(200);
         response->addHeader("Server", "TimerServer");
         response->addHeader("Connection", "keep-alive");
         request->send(response);
