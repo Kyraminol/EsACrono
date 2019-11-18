@@ -10,17 +10,18 @@
 class Timer{
     public:
         Timer();
-        void setup(bool serverMode);
+        void setup(bool isServer);
         void loop();
 
     private:
-        TimerServer server;
-        TimerClient client;
-        bool isServer = false;
-        bool isSetup = false;
+        TimerServer _server;
+        TimerClient _client;
+        bool _isServer = false;
+        bool _isSetup = false;
+        int _pingInterval = 10000;  // milliseconds
 
-        String serverName = "Cronometro";
-        String clientName = "";
+        String _serverName = "Cronometro";
+        String _clientName = "T";
 };
 
 #endif

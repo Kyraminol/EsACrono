@@ -7,21 +7,22 @@
 #include <heltec.h>
 
 
-TimerServer::TimerServer() : webserver(80){  
+TimerServer::TimerServer() : _webserver(80){  
 }
 
-void TimerServer::setup(String server, String client){
-    if(isSetup){
+void TimerServer::setup(String serverName, String clientName, int pingInterval){
+    if(_isSetup){
         Serial.println("[Server] Already setup");
         return;
     }
-    isSetup = true;
-    serverName = server;
-    clientName = client;
-    SerialBT.begin(serverName.c_str());
-    WiFi.softAP(serverName.c_str());
+    _isSetup = true;
+    _serverName = serverName;
+    _clientName = clientName;
+    _pingInterval = pingInterval;
+    _SerialBT.begin(_serverName.c_str());
+    WiFi.softAP(_serverName.c_str());
     
-    webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
+    _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
         int headers = request->headers();
         for(int i=0;i<headers;i++){
             AsyncWebHeader* h = request->getHeader(i);
@@ -43,7 +44,7 @@ void TimerServer::setup(String server, String client){
         request->getParam("t")->value() == "0" ? timer = 0 : timer = 1;
         request->getParam("s")->value() == "0" ? stop = false : stop = true;
         
-        request->hasParam("r") ? clientRegister(timer, stop) : timerSet(timer, stop);
+        request->hasParam("p") ? clientPinged(timer, stop) : timerSet(timer, stop);
 
         AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Ok");
         response->addHeader("Server", "TimerServer");
@@ -51,23 +52,24 @@ void TimerServer::setup(String server, String client){
         request->send(response);
     });
     
-    webserver.begin();
+    _webserver.begin();
 }
 
 void TimerServer::loop(){
     receiveLoRa();
+    pingCheck();
 }
 
 void TimerServer::timerSet(int timer, bool stop){
     if(!stop){
-        if(timers[timer] == 0){
-            timers[timer] = millis();
+        if(_timers[timer] == 0){
+            _timers[timer] = millis();
         }
     } else {
-        if(timers[timer] > 0){
-            results[timer] = (float)(millis() - timers[timer]) / 1000.0;
-            timers[timer] = 0;
-            Serial.println(results[timer]);
+        if(_timers[timer] > 0){
+            _results[timer] = (float)(millis() - _timers[timer]) / 1000.0;
+            _timers[timer] = 0;
+            Serial.println(_results[timer]);
         }
     }
 }
@@ -83,12 +85,9 @@ void TimerServer::receiveLoRa(){
 
     Serial.println("-- LoRa --");
     Serial.println("Message: " + msg);
-    Serial.println("RSSI: " + String(LoRa.packetRssi()));
-    Serial.println("Snr: " + String(LoRa.packetSnr()));
-    Serial.println();
 
     int timer = -1;
-    bool stop = false, registerClient = false;
+    bool stop = false, pinged = false;
     size_t start = 0;
     while (start < msg.length()){
         int end = msg.indexOf('&', start);
@@ -102,13 +101,28 @@ void TimerServer::receiveLoRa(){
             value == "0" ? timer = 0 : timer = 1;
         else if(name == "s")
             value == "0" ? stop = false : stop = true;
-        else if(name == "r")
-            value == "0" ? registerClient = false : registerClient = true;
+        else if(name == "p")
+            value == "0" ? pinged = false : pinged = true;
     }
-
-    registerClient == true ? clientRegister(timer, stop) : timerSet(timer, stop);
+    Serial.println("Timer: " + String(timer));
+    Serial.println("Stop: " + String(stop));
+    Serial.println("Pinged: " + String(pinged));
+    pinged == true ? clientPinged(timer, stop) : timerSet(timer, stop);
 };
 
-void TimerServer::clientRegister(int timer, bool stop){
+void TimerServer::clientPinged(int timer, bool stop){
+    int n = 0;
+    timer == 0 ? n = 0 + stop : n = 2 + stop;
+    _pings[n] = millis();
+}
 
+void TimerServer::pingCheck(){
+    if(_lastPingCheck > 0 && _lastPingCheck + _pingInterval > millis()) return;
+    _lastPingCheck = millis();
+    for(int i = 0; i < 4; i++){
+        if(_pings[i] > 0 && _pings[i] + _pingInterval + 200 < millis()){
+            _pings[i] = 0;
+            Serial.println("Client disconnected: " + String(i));
+        }
+    }
 }

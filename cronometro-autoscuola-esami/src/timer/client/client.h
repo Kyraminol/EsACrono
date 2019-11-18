@@ -10,23 +10,25 @@
 class TimerClient{
     public:
         TimerClient();
-        void setup(String server_name, String client_name);
+        void setup(String serverName, String clientName, int pingInterval);
         void loop();
     private:
-        bool isSetup = false;
-        String clientName;
-        String serverName;
-        BluetoothSerial SerialBT;
-        int n;
-        int s;
-        String endpoint = "/api/v1/";
-        WiFiClient client;
-        HTTPClient http;
-
-
+        bool _isSetup = false;
+        String _clientName = "";
+        String _serverName = "";
+        int _pingInterval = 0;
+        BluetoothSerial _SerialBT;
+        int _n = 0;
+        int _s = 0;
+        String _endpoint = "/api/v1/";
+        WiFiClient _client;
+        HTTPClient _http;
         
         void sendRequest(String path);
         void sendLoRa(String msg);
+
+        int _lastPing = 0;
+        void sendPing();
 };
 
 #endif

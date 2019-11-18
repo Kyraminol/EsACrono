@@ -9,19 +9,23 @@
 class TimerServer{
     public:
         TimerServer();
-        void setup(String server, String client);;
+        void setup(String serverName, String clientName, int pingInterval);
         void loop();
     private:
-        bool isSetup = false;
-        int timers[2] = {0, 0};
-        float results[2];
+        bool _isSetup = false;
+        int _timers[2] = {0, 0};
+        float _results[2];
         void timerSet(int timer, bool stop);
-        String serverName;
-        String clientName;
-        BluetoothSerial SerialBT;
-        AsyncWebServer webserver;
+        String _serverName = "";
+        String _clientName = "";
+        int _pingInterval = 0;
+        BluetoothSerial _SerialBT;
+        AsyncWebServer _webserver;
         void receiveLoRa();
-        void clientRegister(int timer, bool stop);
+        void clientPinged(int timer, bool stop);
+        int _pings[4] = {0, 0, 0, 0};
+        int _lastPingCheck = 0;
+        void pingCheck();
 };
 
 #endif
