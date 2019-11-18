@@ -6,6 +6,11 @@
 #include <heltec.h>
 
 
+#define TIMER_N_PIN GPIO_NUM_37
+#define START_STOP_SWITCH_PIN GPIO_NUM_38
+#define START_STOP_BUTTON_PIN GPIO_NUM_39
+
+
 TimerClient::TimerClient() = default;
 
 void TimerClient::setup(String serverName, String clientName, int pingInterval){
@@ -17,8 +22,8 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _serverName = serverName;
     _clientName = clientName;
     _pingInterval = pingInterval;
-    _n = digitalRead(GPIO_NUM_37);
-    _s = digitalRead(GPIO_NUM_38);
+    _t = digitalRead(TIMER_N_PIN);
+    _s = digitalRead(START_STOP_SWITCH_PIN);
     _SerialBT.begin(clientName.c_str());
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
@@ -32,15 +37,16 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
 }
 
 void TimerClient::loop(){
-    if (digitalRead(GPIO_NUM_39) == LOW){
+    _t = digitalRead(TIMER_N_PIN);
+    _s = digitalRead(START_STOP_SWITCH_PIN);
+    if(digitalRead(START_STOP_BUTTON_PIN) == LOW){
         String msg = "";
-        _n == LOW ? msg += "t=0" : msg += "t=1";
+        _t == LOW ? msg += "t=0" : msg += "t=1";
         _s == LOW ? msg += "&s=0" : msg += "&s=1";
         sendLoRa(msg);
         sendRequest(_endpoint + "timer?" + msg);
     }
     sendPing();
-    delay(20);
 }
 
 void TimerClient::sendRequest(String path){
@@ -52,7 +58,7 @@ void TimerClient::sendRequest(String path){
         if(httpCode > 0){
             Serial.printf("[HTTP] GET... code: %d\n", httpCode);
             if(httpCode == HTTP_CODE_OK) {
-                for(int i=0;i<_http.headers();i++){
+                for(int i=0; i<_http.headers(); i++){
                     Serial.printf("HEADER[%s]: %s\n", _http.headerName(i).c_str(), _http.header(i).c_str());
                 }
                 String payload = _http.getString();
@@ -77,7 +83,7 @@ void TimerClient::sendPing(){
     Serial.println(millis());
     _lastPing = millis();
     String msg = "p=1";
-    _n == LOW ? msg += "&t=0" : msg += "&t=1";
+    _t == LOW ? msg += "&t=0" : msg += "&t=1";
     _s == LOW ? msg += "&s=0" : msg += "&s=1";
     sendLoRa(msg);
     if(WiFi.status() == WL_CONNECTED){

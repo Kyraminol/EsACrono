@@ -1,8 +1,6 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <BluetoothSerial.h>
-
 #include "server/server.h"
 #include "client/client.h"
 

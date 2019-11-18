@@ -18,7 +18,7 @@ class TimerClient{
         String _serverName = "";
         int _pingInterval = 0;
         BluetoothSerial _SerialBT;
-        int _n = 0;
+        int _t = 0;
         int _s = 0;
         String _endpoint = "/api/v1/";
         WiFiClient _client;
