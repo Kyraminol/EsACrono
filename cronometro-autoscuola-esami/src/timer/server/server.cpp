@@ -6,6 +6,8 @@
 #include <ESPAsyncWebServer.h>
 #include <heltec.h>
 
+#define RESET_BUTTON_PIN GPIO_NUM_32
+
 
 TimerServer::TimerServer() : _webserver(80){  
 }
@@ -45,7 +47,12 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
         request->getParam("t")->value() == "0" ? timer = 0 : timer = 1;
         request->getParam("s")->value() == "0" ? stop = false : stop = true;
         
-        request->hasParam("p") ? clientPinged(timer, stop) : timerSet(timer, stop);
+        if(request->hasParam("p"))
+            clientPinged(timer, stop);
+        else if(request->hasParam("r"))
+            timerReset(timer);
+        else
+            timerSet(timer, stop);
 
         AsyncWebServerResponse *response = request->beginResponse(200);
         response->addHeader("Server", "TimerServer");
@@ -59,6 +66,17 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
 void TimerServer::loop(){
     receiveLoRa();
     pingCheck();
+    if(digitalRead(GPIO_NUM_39) == LOW){
+        Serial.print("Timer 1: ");
+        Serial.println(_timers[0]);
+        Serial.println(_results[0]);
+        Serial.print("Timer 2: ");
+        Serial.println(_timers[1]);
+        Serial.println(_results[1]);
+    }
+    if(digitalRead(RESET_BUTTON_PIN) == LOW){
+        timerReset();
+    }
 }
 
 void TimerServer::timerSet(int timer, bool stop){
@@ -75,6 +93,18 @@ void TimerServer::timerSet(int timer, bool stop){
     }
 }
 
+void TimerServer::timerReset(int timer){
+    if(timer == -1){
+        for(int i=0; i < 2; i++){
+            _timers[i] = 0;
+            _results[i] = 0;
+        }
+    } else {
+        _timers[timer] = 0;
+        _results[timer] = 0;
+    }
+}
+
 void TimerServer::receiveLoRa(){
     if(LoRa.parsePacket() == 0) return;
 
@@ -88,7 +118,7 @@ void TimerServer::receiveLoRa(){
     Serial.println("Message: " + msg);
 
     int timer = -1;
-    bool stop = false, pinged = false;
+    bool stop = false, pinged = false, reset = false;
     size_t start = 0;
     while (start < msg.length()){
         int end = msg.indexOf('&', start);
@@ -104,11 +134,18 @@ void TimerServer::receiveLoRa(){
             value == "0" ? stop = false : stop = true;
         else if(name == "p")
             value == "0" ? pinged = false : pinged = true;
+        else if(name == "r")
+            value == "0" ? reset = false : reset = true;
     }
     Serial.println("Timer: " + String(timer));
     Serial.println("Stop: " + String(stop));
     Serial.println("Pinged: " + String(pinged));
-    pinged == true ? clientPinged(timer, stop) : timerSet(timer, stop);
+    if(pinged == true)
+        clientPinged(timer, stop);
+    else if(reset == true)
+        timerReset(timer);
+    else
+        timerSet(timer, stop);
 };
 
 void TimerServer::clientPinged(int timer, bool stop){

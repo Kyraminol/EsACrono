@@ -9,6 +9,7 @@
 #define TIMER_N_PIN GPIO_NUM_37
 #define START_STOP_SWITCH_PIN GPIO_NUM_38
 #define START_STOP_BUTTON_PIN GPIO_NUM_39
+#define RESET_BUTTON_PIN GPIO_NUM_32
 
 
 TimerClient::TimerClient() = default;
@@ -42,6 +43,13 @@ void TimerClient::loop(){
     if(digitalRead(START_STOP_BUTTON_PIN) == LOW){
         String msg = "";
         _t == LOW ? msg += "t=0" : msg += "t=1";
+        _s == LOW ? msg += "&s=0" : msg += "&s=1";
+        sendLoRa(msg);
+        sendRequest(_endpoint + "timer?" + msg);
+    }
+    if(digitalRead(RESET_BUTTON_PIN) == LOW){
+        String msg = "r=1";
+        _t == LOW ? msg += "&t=0" : msg += "&t=1";
         _s == LOW ? msg += "&s=0" : msg += "&s=1";
         sendLoRa(msg);
         sendRequest(_endpoint + "timer?" + msg);

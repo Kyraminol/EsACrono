@@ -13,6 +13,7 @@ void Timer::setup(bool isServer){
     };
     _isSetup = true;
     _isServer = isServer;
+    pinMode(GPIO_NUM_32, INPUT);
     pinMode(GPIO_NUM_37, INPUT);
     pinMode(GPIO_NUM_38, INPUT);
     pinMode(GPIO_NUM_39, INPUT);
