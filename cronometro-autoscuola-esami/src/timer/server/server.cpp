@@ -54,7 +54,8 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
         else
             timerSet(timer, stop);
 
-        AsyncWebServerResponse *response = request->beginResponse(200);
+        String responseText = String(_results[timer], 1);
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", responseText);
         response->addHeader("Server", "TimerServer");
         response->addHeader("Connection", "keep-alive");
         request->send(response);
