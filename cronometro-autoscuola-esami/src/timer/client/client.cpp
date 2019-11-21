@@ -1,15 +1,11 @@
 #include "client.h"
 
+#include "../timer.h"
+
 #include <Arduino.h>
 #include <BluetoothSerial.h>
 #include <Wifi.h>
 #include <heltec.h>
-
-
-#define TIMER_N_PIN GPIO_NUM_37
-#define START_STOP_SWITCH_PIN GPIO_NUM_38
-#define START_STOP_BUTTON_PIN GPIO_NUM_39
-#define RESET_BUTTON_PIN GPIO_NUM_32
 
 
 TimerClient::TimerClient() = default;
@@ -23,8 +19,8 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _serverName = serverName;
     _clientName = clientName;
     _pingInterval = pingInterval;
-    _t = digitalRead(TIMER_N_PIN);
-    _s = digitalRead(START_STOP_SWITCH_PIN);
+    _t = digitalRead(TIMER_SWITCH);
+    _s = digitalRead(STOP_SWITCH);
     _SerialBT.begin(_clientName.c_str());
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
@@ -38,16 +34,16 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
 }
 
 void TimerClient::loop(){
-    _t = digitalRead(TIMER_N_PIN);
-    _s = digitalRead(START_STOP_SWITCH_PIN);
-    if(digitalRead(START_STOP_BUTTON_PIN) == LOW){
+    _t = digitalRead(TIMER_SWITCH);
+    _s = digitalRead(STOP_SWITCH);
+    if(digitalRead(START_BUTTON) == LOW){
         String msg = "";
         _t == LOW ? msg += "t=0" : msg += "t=1";
         _s == LOW ? msg += "&s=0" : msg += "&s=1";
         sendLoRa(msg);
         sendRequest(_endpoint + "timer?" + msg);
     }
-    if(digitalRead(RESET_BUTTON_PIN) == LOW){
+    if(digitalRead(RESET_BUTTON) == LOW){
         String msg = "r=1";
         _t == LOW ? msg += "&t=0" : msg += "&t=1";
         _s == LOW ? msg += "&s=0" : msg += "&s=1";

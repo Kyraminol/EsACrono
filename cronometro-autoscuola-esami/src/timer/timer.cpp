@@ -6,17 +6,24 @@
 
 Timer::Timer() = default;
 
-void Timer::setup(bool isServer){
+void Timer::setup(){
     if(_isSetup){
         Serial.println("[Timer] Already setup");
         return;
     };
     _isSetup = true;
-    _isServer = isServer;
-    pinMode(GPIO_NUM_32, INPUT);
-    pinMode(GPIO_NUM_37, INPUT);
-    pinMode(GPIO_NUM_38, INPUT);
-    pinMode(GPIO_NUM_39, INPUT);
+
+    pinMode(SERVER_SWITCH, INPUT);
+    pinMode(TIMER_SWITCH, INPUT);
+    pinMode(STOP_SWITCH, INPUT);
+    pinMode(REMOTE_SWITCH, INPUT);
+    pinMode(START_BUTTON, INPUT);
+    pinMode(RESET_BUTTON, INPUT);
+    pinMode(LEDMATRIX1_SWITCH, INPUT);
+    pinMode(LEDMATRIX2_SWITCH, INPUT);
+
+    _isServer = digitalRead(SERVER_SWITCH);
+
     if(_isServer){
         Serial.println("[Timer] Starting as server...");
         _server.setup(_serverName, _clientName, _pingInterval);

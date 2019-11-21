@@ -5,10 +5,24 @@
 #include "client/client.h"
 
 
+#define SERVER_SWITCH GPIO_NUM_36
+#define TIMER_SWITCH GPIO_NUM_37
+#define STOP_SWITCH GPIO_NUM_38
+#define REMOTE_SWITCH GPIO_NUM_39
+
+#define START_BUTTON GPIO_NUM_32
+#define RESET_BUTTON GPIO_NUM_33
+
+#define LEDMATRIX1_SWITCH GPIO_NUM_12
+#define LEDMATRIX2_SWITCH GPIO_NUM_13
+
+#define LEDMATRIX_DATA GPIO_NUM_17
+
+
 class Timer{
     public:
         Timer();
-        void setup(bool isServer);
+        void setup();
         void loop();
 
     private:

@@ -1,12 +1,12 @@
 #include "server.h"
 
+#include "../timer.h"
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <BluetoothSerial.h>
 #include <ESPAsyncWebServer.h>
 #include <heltec.h>
-
-#define RESET_BUTTON_PIN GPIO_NUM_32
 
 
 TimerServer::TimerServer() : _webserver(80){  
@@ -75,7 +75,7 @@ void TimerServer::loop(){
         Serial.println(_timers[1]);
         Serial.println(_results[1]);
     }
-    if(digitalRead(RESET_BUTTON_PIN) == LOW){
+    if(digitalRead(RESET_BUTTON) == LOW){
         timerReset();
     }
 }
