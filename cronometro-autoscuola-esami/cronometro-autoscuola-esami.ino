@@ -9,9 +9,8 @@
 
 Timer timer;
 
-void setup() {
+void setup(){
     Serial.begin(115200);
-
     Heltec.begin(true, true, true, true, LORA_BAND);
     Heltec.display -> clear();
     Heltec.display -> drawXbm(0, 0, logo_width, logo_height, logo_bits);
@@ -23,6 +22,6 @@ void setup() {
     timer.setup();
 }
 
-void loop() {
-    timer.loop();
+void loop(){
+  timer.loop();
 }

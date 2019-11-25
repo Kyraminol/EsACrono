@@ -9,7 +9,13 @@
 #include <heltec.h>
 
 
-TimerServer::TimerServer() : _webserver(80){  
+TimerServer::TimerServer() :
+    _webserver(80),
+    _matrix(32, 8, 1, 2, LEDMATRIX_DATA,
+            NEO_TILE_TOP + NEO_TILE_RIGHT + NEO_TILE_ROWS + NEO_TILE_PROGRESSIVE +
+            NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
+            NEO_GRB + NEO_KHZ800)
+{  
 }
 
 void TimerServer::setup(String serverName, String clientName, int pingInterval){
@@ -62,6 +68,9 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     });
     
     _webserver.begin();
+    _matrix.begin();
+    _matrix.setBrightness(50);
+    _matrix.setTextWrap(false);
 }
 
 void TimerServer::loop(){
@@ -78,6 +87,7 @@ void TimerServer::loop(){
     if(digitalRead(RESET_BUTTON) == LOW){
         timerReset();
     }
+    matrixRefresh();
 }
 
 void TimerServer::timerSet(int timer, bool stop){
@@ -164,4 +174,45 @@ void TimerServer::pingCheck(){
             Serial.println("Client disconnected: " + String(i));
         }
     }
+}
+
+void TimerServer::matrixRefresh(){
+    if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + 100 > millis()) return;
+    _lastMatrixRefresh = millis();
+    _matrix.fillScreen(0);
+    _matrix.setTextColor(_matrix.Color(0, 255, 0));
+
+    _matrix.setCursor(0, 0);
+    _matrix.print("0");
+
+    _matrix.setCursor(5, 0);
+    _matrix.print(":");
+
+    _matrix.setCursor(10, 0);
+    _matrix.print("00");
+
+    _matrix.setCursor(21, 0);
+    _matrix.print(":");
+
+    _matrix.setCursor(26, 0);
+    _matrix.print("0");
+
+    _matrix.setTextColor(_matrix.Color(255, 0, 0));
+
+    _matrix.setCursor(0, 8);
+    _matrix.print("0");
+
+    _matrix.setCursor(5, 8);
+    _matrix.print(":");
+
+    _matrix.setCursor(10, 8);
+    _matrix.print("00");
+
+    _matrix.setCursor(21, 8);
+    _matrix.print(":");
+
+    _matrix.setCursor(26, 8);
+    _matrix.print("0");
+    
+    _matrix.show();
 }

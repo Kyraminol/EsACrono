@@ -22,6 +22,8 @@ void Timer::setup(){
     pinMode(LEDMATRIX1_SWITCH, INPUT);
     pinMode(LEDMATRIX2_SWITCH, INPUT);
 
+    
+
     _isServer = digitalRead(SERVER_SWITCH);
 
     if(_isServer){

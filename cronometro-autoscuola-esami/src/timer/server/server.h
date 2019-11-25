@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <BluetoothSerial.h>
 #include <ESPAsyncWebServer.h>
+#include <Adafruit_NeoMatrix.h>
 
 
 class TimerServer{
@@ -27,6 +28,9 @@ class TimerServer{
         int _pings[4] = {0, 0, 0, 0};
         int _lastPingCheck = 0;
         void pingCheck();
+        Adafruit_NeoMatrix _matrix;
+        int _lastMatrixRefresh = 0;
+        void matrixRefresh();
 };
 
 #endif
