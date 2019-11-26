@@ -84,9 +84,9 @@ void TimerServer::loop(){
         Serial.println(_timers[1]);
         Serial.println(_results[1]);
     }
-    if(digitalRead(RESET_BUTTON) == LOW){
+    /*if(digitalRead(RESET_BUTTON) == LOW){
         timerReset();
-    }
+    }*/
     matrixRefresh();
 }
 
@@ -97,9 +97,8 @@ void TimerServer::timerSet(int timer, bool stop){
         }
     } else {
         if(_timers[timer] > 0){
-            _results[timer] = (float)(millis() - _timers[timer]) / 1000.0;
+            _results[timer] = millis() - _timers[timer];
             _timers[timer] = 0;
-            Serial.println(_results[timer]);
         }
     }
 }
@@ -125,9 +124,6 @@ void TimerServer::receiveLoRa(){
         msg += (char)LoRa.read();
     }
 
-    Serial.println("-- LoRa --");
-    Serial.println("Message: " + msg);
-
     int timer = -1;
     bool stop = false, pinged = false, reset = false;
     size_t start = 0;
@@ -148,9 +144,6 @@ void TimerServer::receiveLoRa(){
         else if(name == "r")
             value == "0" ? reset = false : reset = true;
     }
-    Serial.println("Timer: " + String(timer));
-    Serial.println("Stop: " + String(stop));
-    Serial.println("Pinged: " + String(pinged));
     if(pinged == true)
         clientPinged(timer, stop);
     else if(reset == true)
@@ -179,40 +172,68 @@ void TimerServer::pingCheck(){
 void TimerServer::matrixRefresh(){
     if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + 100 > millis()) return;
     _lastMatrixRefresh = millis();
-    _matrix.fillScreen(0);
-    _matrix.setTextColor(_matrix.Color(0, 255, 0));
 
+    _matrix.setTextColor(_matrix.Color(0, 0, 255), 0);
+    String minutes = "0";
+    String seconds = "00";
+    String decimals = "0";
+    if(_timers[0] > 0 || _results[0] > 0){
+        _matrix.setTextColor(_matrix.Color(255, 0, 0), 0);
+        int d =  0;
+        if(_timers[0] > 0)
+            d = (millis() - _timers[0]) / 100;
+        else
+            d = _results[0] / 100;
+        int s = d / 10;
+        int m = s / 60;
+        s -= m * 60;
+        if(m > 0 || s > 15) _matrix.setTextColor(_matrix.Color(0, 255, 0), 0);
+        minutes = String(m);
+        s < 10 ? seconds = "0" + String(s) : seconds = String(s);
+        decimals = String(d);
+        decimals = decimals.substring(decimals.length() - 1);
+    }
     _matrix.setCursor(0, 0);
-    _matrix.print("0");
-
+    _matrix.print(minutes);
     _matrix.setCursor(5, 0);
     _matrix.print(":");
-
     _matrix.setCursor(10, 0);
-    _matrix.print("00");
-
+    _matrix.print(seconds);
     _matrix.setCursor(21, 0);
     _matrix.print(":");
-
     _matrix.setCursor(26, 0);
-    _matrix.print("0");
+    _matrix.print(decimals);
 
-    _matrix.setTextColor(_matrix.Color(255, 0, 0));
-
+    _matrix.setTextColor(_matrix.Color(0, 0, 255), 0);
+    minutes = "0";
+    seconds = "00";
+    decimals = "0";
+    if(_timers[1] > 0 || _results[1] > 0){
+        _matrix.setTextColor(_matrix.Color(0, 255, 0), 0);
+        int d = 0;
+        if(_timers[1] > 0)
+            d = (millis() - _timers[1]) / 100;
+        else
+            d = _results[1] / 100;
+        int s = d / 10;
+        int m = s / 60;
+        s -= m * 60;
+        if(m > 0 || s > 25) _matrix.setTextColor(_matrix.Color(255, 0, 0), 0);
+        minutes = String(m);
+        s < 10 ? seconds = "0" + String(s) : seconds = String(s);
+        decimals = String(d);
+        decimals = decimals.substring(decimals.length() - 1);
+    }
     _matrix.setCursor(0, 8);
-    _matrix.print("0");
-
+    _matrix.print(minutes);
     _matrix.setCursor(5, 8);
     _matrix.print(":");
-
     _matrix.setCursor(10, 8);
-    _matrix.print("00");
-
+    _matrix.print(seconds);
     _matrix.setCursor(21, 8);
     _matrix.print(":");
-
     _matrix.setCursor(26, 8);
-    _matrix.print("0");
-    
+    _matrix.print(decimals);
+
     _matrix.show();
 }
