@@ -69,7 +69,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     
     _webserver.begin();
     _matrix.begin();
-    _matrix.setBrightness(50);
+    _matrix.setBrightness(20);
     _matrix.setTextWrap(false);
 }
 
@@ -204,6 +204,12 @@ void TimerServer::matrixRefresh(){
     _matrix.setCursor(26, 0);
     _matrix.print(decimals);
 
+    int statusColor = 0;
+    _pings[0] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
+    _matrix.fillRect(6, 6, 3, 2, statusColor);
+    _pings[1] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
+    _matrix.fillRect(22, 6, 3, 2, statusColor);
+
     _matrix.setTextColor(_matrix.Color(0, 0, 255), 0);
     minutes = "0";
     seconds = "00";
@@ -234,6 +240,12 @@ void TimerServer::matrixRefresh(){
     _matrix.print(":");
     _matrix.setCursor(26, 8);
     _matrix.print(decimals);
+
+    _pings[2] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
+    _matrix.fillRect(6, 14, 3, 2, statusColor);
+    _pings[3] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
+    _matrix.fillRect(22, 14, 3, 2, statusColor);
+
 
     _matrix.show();
 }
