@@ -4,8 +4,13 @@
 #include <Arduino.h>
 #include <BluetoothSerial.h>
 #include <ESPAsyncWebServer.h>
-#include <Adafruit_NeoMatrix.h>
 
+#include <FastLED_NeoMatrix.h>
+
+
+#define mw 16
+#define mh 32
+#define NUMMATRIX (mw*mh)
 
 class TimerServer{
     public:
@@ -13,6 +18,7 @@ class TimerServer{
         void setup(String serverName, String clientName, int pingInterval);
         void loop();
     private:
+CRGB leds[NUMMATRIX];
         bool _isSetup = false;
         int _timers[2] = {0, 0};
         float _results[2];
@@ -28,7 +34,7 @@ class TimerServer{
         int _pings[4] = {0, 0, 0, 0};
         int _lastPingCheck = 0;
         void pingCheck();
-        Adafruit_NeoMatrix _matrix;
+        FastLED_NeoMatrix _matrix;
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
 };

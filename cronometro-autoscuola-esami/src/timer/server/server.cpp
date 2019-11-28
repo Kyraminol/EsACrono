@@ -7,14 +7,14 @@
 #include <BluetoothSerial.h>
 #include <ESPAsyncWebServer.h>
 #include <heltec.h>
+#include <FastLED.h>
 
 
 TimerServer::TimerServer() :
     _webserver(80),
-    _matrix(32, 8, 1, 2, LEDMATRIX_DATA,
+    _matrix(leds, 32, 8, 1, 2, 
             NEO_TILE_TOP + NEO_TILE_RIGHT + NEO_TILE_ROWS + NEO_TILE_PROGRESSIVE +
-            NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
-            NEO_GRB + NEO_KHZ800)
+            NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG)
 {  
 }
 
@@ -68,6 +68,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     });
     
     _webserver.begin();
+    FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
     _matrix.begin();
     _matrix.setBrightness(20);
     _matrix.setTextWrap(false);

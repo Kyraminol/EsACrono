@@ -19,9 +19,9 @@ void Timer::setup(){
     pinMode(REMOTE_SWITCH, INPUT);
     pinMode(START_BUTTON, INPUT);
     pinMode(RESET_BUTTON, INPUT);
-    pinMode(LEDMATRIX1_SWITCH, INPUT);
+    //pinMode(LEDMATRIX1_SWITCH, INPUT);
     pinMode(LEDMATRIX2_SWITCH, INPUT);
-
+    pinMode(LEDMATRIX_DATA, OUTPUT);
     
 
     _isServer = digitalRead(SERVER_SWITCH);
