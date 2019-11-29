@@ -188,7 +188,7 @@ void TimerServer::matrixRefresh(){
         int s = d / 10;
         int m = s / 60;
         s -= m * 60;
-        if(m > 0 || s > 15) _matrix.setTextColor(_matrix.Color(0, 255, 0), 0);
+        if(m > 0 || s > 15 || (s > 14 && d > 1)) _matrix.setTextColor(_matrix.Color(0, 255, 0), 0);
         minutes = String(m);
         s < 10 ? seconds = "0" + String(s) : seconds = String(s);
         decimals = String(d);

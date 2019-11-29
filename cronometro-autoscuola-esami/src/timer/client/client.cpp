@@ -6,9 +6,14 @@
 #include <BluetoothSerial.h>
 #include <Wifi.h>
 #include <heltec.h>
+#include <FastLED.h>
 
 
-TimerClient::TimerClient() = default;
+TimerClient::TimerClient() :
+    _matrix(leds, 5, 5,
+            NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG)
+{  
+}
 
 void TimerClient::setup(String serverName, String clientName, int pingInterval){
     if(_isSetup){
@@ -31,6 +36,10 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     }
     _http.setReuse(true);
     sendPing();
+    FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(leds, NUMMATRIXX).setCorrection(TypicalLEDStrip);
+    _matrix.begin();
+    _matrix.setBrightness(20);
+    _matrix.setTextWrap(false);
 }
 
 void TimerClient::loop(){
@@ -51,6 +60,7 @@ void TimerClient::loop(){
         sendRequest(_endpoint + "timer?" + msg);
     }
     sendPing();
+    matrixRefresh();
 }
 
 void TimerClient::sendRequest(String path){
@@ -90,4 +100,11 @@ void TimerClient::sendPing(){
     _s == LOW ? msg += "&s=0" : msg += "&s=1";
     sendLoRa(msg);
     sendRequest(_endpoint + "timer?" + msg);
+}
+
+void TimerClient::matrixRefresh(){
+    _matrix.drawLine(0, 0, 4, 4, _matrix.Color(255, 0, 0));
+    _matrix.drawLine(4, 0, 0, 4, _matrix.Color(255, 0, 0));
+
+    _matrix.show();
 }

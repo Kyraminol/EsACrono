@@ -5,7 +5,11 @@
 #include <BluetoothSerial.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <FastLED_NeoMatrix.h>
 
+#define mww 5
+#define mhh 5
+#define NUMMATRIXX (mww*mhh)
 
 class TimerClient{
     public:
@@ -29,6 +33,11 @@ class TimerClient{
 
         int _lastPing = 0;
         void sendPing();
+
+        CRGB leds[NUMMATRIXX];
+        FastLED_NeoMatrix _matrix;
+        int _lastMatrixRefresh = 0;
+        void matrixRefresh();
 };
 
 #endif
