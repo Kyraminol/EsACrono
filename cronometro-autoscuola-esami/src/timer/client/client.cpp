@@ -10,7 +10,7 @@
 
 
 TimerClient::TimerClient() :
-    _matrix(leds, 5, 5,
+    _matrix(_matrixLeds, _matrixWidth, _matrixHeight,
             NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG)
 {  
 }
@@ -36,7 +36,7 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     }
     _http.setReuse(true);
     sendPing();
-    FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(leds, NUMMATRIXX).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
     _matrix.begin();
     _matrix.setBrightness(20);
     _matrix.setTextWrap(false);

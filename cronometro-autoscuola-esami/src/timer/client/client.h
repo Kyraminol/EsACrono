@@ -7,9 +7,6 @@
 #include <HTTPClient.h>
 #include <FastLED_NeoMatrix.h>
 
-#define mww 5
-#define mhh 5
-#define NUMMATRIXX (mww*mhh)
 
 class TimerClient{
     public:
@@ -34,7 +31,10 @@ class TimerClient{
         int _lastPing = 0;
         void sendPing();
 
-        CRGB leds[NUMMATRIXX];
+        static const int _matrixWidth = 5;
+        static const int _matrixHeight = 5;
+        static const int _matrixSize = _matrixWidth * _matrixHeight;
+        CRGB _matrixLeds[_matrixSize];
         FastLED_NeoMatrix _matrix;
         int _lastMatrixRefresh = 0;
         void matrixRefresh();

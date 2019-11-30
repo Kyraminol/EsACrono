@@ -8,17 +8,12 @@
 #include <FastLED_NeoMatrix.h>
 
 
-#define mw 16
-#define mh 32
-#define NUMMATRIX (mw*mh)
-
 class TimerServer{
     public:
         TimerServer();
         void setup(String serverName, String clientName, int pingInterval);
         void loop();
     private:
-CRGB leds[NUMMATRIX];
         bool _isSetup = false;
         int _timers[2] = {0, 0};
         float _results[2];
@@ -34,6 +29,12 @@ CRGB leds[NUMMATRIX];
         int _pings[4] = {0, 0, 0, 0};
         int _lastPingCheck = 0;
         void pingCheck();
+        static const int _matrixWidth = 16;
+        static const int _matrixHeight = 32;
+        static const int _matrixTileWidth = 1;
+        static const int _matrixTileHeight = 2;
+        static const int _matrixSize = _matrixWidth * _matrixHeight;
+        CRGB _matrixLeds[_matrixSize];
         FastLED_NeoMatrix _matrix;
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
