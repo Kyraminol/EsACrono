@@ -47,15 +47,15 @@ void TimerClient::loop(){
     _s = digitalRead(STOP_SWITCH);
     if(digitalRead(START_BUTTON) == LOW){
         String msg = "";
-        _t == LOW ? msg += "t=0" : msg += "t=1";
-        _s == LOW ? msg += "&s=0" : msg += "&s=1";
+        _t == HIGH ? msg += "t=0" : msg += "t=1";
+        _s == HIGH ? msg += "&s=0" : msg += "&s=1";
         sendLoRa(msg);
         sendRequest(_endpoint + "timer?" + msg);
     }
     if(digitalRead(RESET_BUTTON) == LOW){
         String msg = "r=1";
-        _t == LOW ? msg += "&t=0" : msg += "&t=1";
-        _s == LOW ? msg += "&s=0" : msg += "&s=1";
+        _t == HIGH ? msg += "&t=0" : msg += "&t=1";
+        _s == HIGH ? msg += "&s=0" : msg += "&s=1";
         sendLoRa(msg);
         sendRequest(_endpoint + "timer?" + msg);
     }
@@ -96,8 +96,8 @@ void TimerClient::sendPing(){
     if(_lastPing > 0 && _lastPing + _pingInterval > millis()) return;
     _lastPing = millis();
     String msg = "p=1";
-    _t == LOW ? msg += "&t=0" : msg += "&t=1";
-    _s == LOW ? msg += "&s=0" : msg += "&s=1";
+    _t == HIGH ? msg += "&t=0" : msg += "&t=1";
+    _s == HIGH ? msg += "&s=0" : msg += "&s=1";
     sendLoRa(msg);
     sendRequest(_endpoint + "timer?" + msg);
 }

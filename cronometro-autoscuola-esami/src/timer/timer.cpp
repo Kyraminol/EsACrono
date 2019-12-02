@@ -26,7 +26,7 @@ void Timer::setup(){
 
     _isServer = digitalRead(SERVER_SWITCH);
 
-    if(_isServer){
+    if(_isServer == LOW){
         Serial.println("[Timer] Starting as server...");
         _server.setup(_serverName, _clientName, _pingInterval);
     } else {
