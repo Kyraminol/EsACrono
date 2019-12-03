@@ -26,7 +26,12 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _pingInterval = pingInterval;
     _t = digitalRead(TIMER_SWITCH);
     _s = digitalRead(STOP_SWITCH);
+
+    Serial.print("[Client] Starting Bluetooth...");
     _SerialBT.begin(_clientName.c_str());
+    Serial.println("ok");
+
+    Serial.print("[Client] Starting WiFi...");
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);
@@ -43,21 +48,13 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
 }
 
 void TimerClient::loop(){
-    _t = digitalRead(TIMER_SWITCH);
-    _s = digitalRead(STOP_SWITCH);
     if(digitalRead(START_BUTTON) == LOW){
         String msg = "";
-        _t == HIGH ? msg += "t=0" : msg += "t=1";
-        _s == HIGH ? msg += "&s=0" : msg += "&s=1";
-        sendLoRa(msg);
-        sendRequest(_endpoint + "timer?" + msg);
-    }
+        sendMsg(msg);
+    }    
     if(digitalRead(RESET_BUTTON) == LOW){
         String msg = "r=1";
-        _t == HIGH ? msg += "&t=0" : msg += "&t=1";
-        _s == HIGH ? msg += "&s=0" : msg += "&s=1";
-        sendLoRa(msg);
-        sendRequest(_endpoint + "timer?" + msg);
+        sendMsg(msg);
     }
     sendPing();
     matrixRefresh();
@@ -92,14 +89,26 @@ void TimerClient::sendLoRa(String msg){
     LoRa.endPacket();
 }
 
+String TimerClient::getClientType(){
+    String clientType = "";
+    _t = digitalRead(TIMER_SWITCH);
+    _s = digitalRead(STOP_SWITCH);
+    clientType += _t == HIGH ? "&t=0" : "&t=1";
+    clientType += _s == HIGH ? "&s=0" : "&s=1";
+    return clientType;
+}
+
+void TimerClient::sendMsg(String msg){
+    msg += getClientType();
+    sendLoRa(msg);
+}
+
+
 void TimerClient::sendPing(){
     if(_lastPing > 0 && _lastPing + _pingInterval > millis()) return;
     _lastPing = millis();
     String msg = "p=1";
-    _t == HIGH ? msg += "&t=0" : msg += "&t=1";
-    _s == HIGH ? msg += "&s=0" : msg += "&s=1";
-    sendLoRa(msg);
-    sendRequest(_endpoint + "timer?" + msg);
+    sendMsg(msg);
 }
 
 void TimerClient::matrixRefresh(){

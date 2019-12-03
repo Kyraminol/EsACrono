@@ -29,8 +29,8 @@ class TimerServer{
         int _pings[4] = {0, 0, 0, 0};
         int _lastPingCheck = 0;
         void pingCheck();
-        static const int _matrixWidth = 16;
-        static const int _matrixHeight = 32;
+        static const int _matrixWidth = 32;
+        static const int _matrixHeight = 16;
         static const int _matrixTileWidth = 1;
         static const int _matrixTileHeight = 2;
         static const int _matrixSize = _matrixWidth * _matrixHeight;

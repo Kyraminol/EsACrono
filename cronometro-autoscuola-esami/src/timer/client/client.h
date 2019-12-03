@@ -38,6 +38,9 @@ class TimerClient{
         FastLED_NeoMatrix _matrix;
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
+
+        void sendMsg(String msg);
+        String getClientType();
 };
 
 #endif

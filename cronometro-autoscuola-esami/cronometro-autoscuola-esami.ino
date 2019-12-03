@@ -15,7 +15,7 @@ void setup(){
     Heltec.display -> clear();
     Heltec.display -> drawXbm(0, 0, logo_width, logo_height, logo_bits);
     Heltec.display -> display();
-    delay(2000);
+    delay(200);
     Heltec.display -> clear();
     Heltec.display -> display();
 
