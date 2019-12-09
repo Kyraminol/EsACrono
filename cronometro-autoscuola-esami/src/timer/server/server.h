@@ -29,6 +29,10 @@ class TimerServer{
         int _pings[4] = {0, 0, 0, 0};
         int _lastPingCheck = 0;
         void pingCheck();
+
+        int _matrixRed;
+        int _matrixGreen;
+        int _matrixBlue;
         static const int _matrixWidth = 32;
         static const int _matrixHeight = 16;
         static const int _matrixTileWidth = 1;
@@ -36,6 +40,8 @@ class TimerServer{
         static const int _matrixSize = _matrixWidth * _matrixHeight;
         CRGB _matrixLeds[_matrixSize];
         FastLED_NeoMatrix _matrix;
+
+        static const int _matrixRefreshInterval = 10;
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
 };

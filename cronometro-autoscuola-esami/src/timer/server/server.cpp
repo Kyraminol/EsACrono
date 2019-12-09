@@ -9,6 +9,10 @@
 #include <heltec.h>
 #include <FastLED.h>
 
+#include <Fonts/Picopixel.h>
+#include <Fonts/Tiny3x3a2pt7b.h>
+#include <Fonts/TomThumb.h>
+
 
 TimerServer::TimerServer() :
     _webserver(80),
@@ -72,6 +76,9 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     _matrix.begin();
     _matrix.setBrightness(20);
     _matrix.setTextWrap(false);
+    _matrixRed = _matrix.Color(255, 0, 0);
+    _matrixGreen = _matrix.Color(0, 255, 0);
+    _matrixBlue = _matrix.Color(0, 0, 255);
 }
 
 void TimerServer::loop(){
@@ -85,9 +92,9 @@ void TimerServer::loop(){
         Serial.println(_timers[1]);
         Serial.println(_results[1]);
     }
-    /*if(digitalRead(RESET_BUTTON) == LOW){
-        timerReset();
-    }*/
+
+    if(digitalRead(RESET_BUTTON) == LOW) timerReset();
+
     matrixRefresh();
 }
 
@@ -171,15 +178,20 @@ void TimerServer::pingCheck(){
 }
 
 void TimerServer::matrixRefresh(){
-    if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + 100 > millis()) return;
+    if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + _matrixRefreshInterval > millis()) return;
     _lastMatrixRefresh = millis();
+    
+    int matrixSwitch = digitalRead(LEDMATRIX_SWITCH);
+    matrixSwitch == LOW ? _matrix.setFont() : _matrix.setFont(&TomThumb);
+    _matrix.fillScreen(0);
 
-    _matrix.setTextColor(_matrix.Color(0, 0, 255), 0);
     String minutes = "0";
     String seconds = "00";
     String decimals = "0";
+    int color = _matrixBlue;
+
     if(_timers[0] > 0 || _results[0] > 0){
-        _matrix.setTextColor(_matrix.Color(255, 0, 0), 0);
+        color = _matrixRed;
         int d =  0;
         if(_timers[0] > 0)
             d = (millis() - _timers[0]) / 100;
@@ -188,35 +200,42 @@ void TimerServer::matrixRefresh(){
         int s = d / 10;
         int m = s / 60;
         s -= m * 60;
-        if(m > 0 || s > 15 || (s > 14 && d > 1)) _matrix.setTextColor(_matrix.Color(0, 255, 0), 0);
+        if(m > 0 || s > 15 || (s > 14 && d > 1)) color = _matrixGreen;
         minutes = String(m);
         s < 10 ? seconds = "0" + String(s) : seconds = String(s);
         decimals = String(d);
         decimals = decimals.substring(decimals.length() - 1);
     }
-    _matrix.setCursor(0, 0);
-    _matrix.print(minutes);
-    _matrix.setCursor(5, 0);
-    _matrix.print(":");
-    _matrix.setCursor(10, 0);
-    _matrix.print(seconds);
-    _matrix.setCursor(21, 0);
-    _matrix.print(":");
-    _matrix.setCursor(26, 0);
-    _matrix.print(decimals);
+    
+    _matrix.setTextColor(color);
+    if(matrixSwitch == LOW){
+        _matrix.setCursor(0, 0);
+        _matrix.print(minutes);
+        _matrix.setCursor(5, 0);
+        _matrix.print(":");
+        _matrix.setCursor(10, 0);
+        _matrix.print(seconds);
+        _matrix.setCursor(21, 0);
+        _matrix.print(":");
+        _matrix.setCursor(26, 0);
+        _matrix.print(decimals);
+        _pings[0] == 0 ? _matrix.fillRect(6, 6, 3, 2, _matrixRed) : _matrix.fillRect(6, 6, 3, 2, _matrixGreen);
+        _pings[1] == 0 ? _matrix.fillRect(22, 6, 3, 2, _matrixRed) : _matrix.fillRect(22, 6, 3, 2, _matrixGreen);
+    } else {
+        _matrix.setCursor(1, 6);
+        _matrix.print(seconds + ":" + decimals);
+        _pings[0] == 0 ? _matrix.drawFastHLine(2, 7, 4, _matrixRed) : _matrix.drawFastHLine(2, 7, 4, _matrixGreen);
+        _pings[1] == 0 ? _matrix.drawFastHLine(9, 7, 4, _matrixRed) : _matrix.drawFastHLine(9, 7, 4, _matrixGreen);
+        _matrix.drawFastVLine(15, 0, 8, _matrix.Color(0, 255, 255));
+        _matrix.drawFastVLine(16, 0, 8, _matrix.Color(0, 255, 255));
+    }
 
-    int statusColor = 0;
-    _pings[0] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
-    _matrix.fillRect(6, 6, 3, 2, statusColor);
-    _pings[1] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
-    _matrix.fillRect(22, 6, 3, 2, statusColor);
-
-    _matrix.setTextColor(_matrix.Color(0, 0, 255), 0);
     minutes = "0";
     seconds = "00";
     decimals = "0";
+    color = _matrixBlue;
     if(_timers[1] > 0 || _results[1] > 0){
-        _matrix.setTextColor(_matrix.Color(0, 255, 0), 0);
+        color = _matrixGreen;
         int d = 0;
         if(_timers[1] > 0)
             d = (millis() - _timers[1]) / 100;
@@ -225,28 +244,32 @@ void TimerServer::matrixRefresh(){
         int s = d / 10;
         int m = s / 60;
         s -= m * 60;
-        if(m > 0 || s > 25) _matrix.setTextColor(_matrix.Color(255, 0, 0), 0);
+        if(m > 0 || s > 25) color = _matrixRed;
         minutes = String(m);
         s < 10 ? seconds = "0" + String(s) : seconds = String(s);
         decimals = String(d);
         decimals = decimals.substring(decimals.length() - 1);
     }
-    _matrix.setCursor(0, 8);
-    _matrix.print(minutes);
-    _matrix.setCursor(5, 8);
-    _matrix.print(":");
-    _matrix.setCursor(10, 8);
-    _matrix.print(seconds);
-    _matrix.setCursor(21, 8);
-    _matrix.print(":");
-    _matrix.setCursor(26, 8);
-    _matrix.print(decimals);
-
-    _pings[2] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
-    _matrix.fillRect(6, 14, 3, 2, statusColor);
-    _pings[3] == 0 ? statusColor = _matrix.Color(255, 0, 0) : statusColor = _matrix.Color(0, 255, 0);
-    _matrix.fillRect(22, 14, 3, 2, statusColor);
-
+    _matrix.setTextColor(color);
+    if(matrixSwitch == LOW){
+        _matrix.setCursor(0, 8);
+        _matrix.print(minutes);
+        _matrix.setCursor(5, 8);
+        _matrix.print(":");
+        _matrix.setCursor(10, 8);
+        _matrix.print(seconds);
+        _matrix.setCursor(21, 8);
+        _matrix.print(":");
+        _matrix.setCursor(26, 8);
+        _matrix.print(decimals);
+        _pings[2] == 0 ? _matrix.fillRect(6, 14, 3, 2, _matrixRed) : _matrix.fillRect(6, 14, 3, 2, _matrixGreen);
+        _pings[3] == 0 ? _matrix.fillRect(22, 14, 3, 2, _matrixRed) : _matrix.fillRect(22, 14, 3, 2, _matrixGreen);
+    } else {
+        _matrix.setCursor(18, 6);
+        _matrix.print(seconds + ":" + decimals);
+        _pings[2] == 0 ? _matrix.drawFastHLine(19, 7, 4, _matrixRed) : _matrix.drawFastHLine(19, 7, 4, _matrixGreen);
+        _pings[3] == 0 ? _matrix.drawFastHLine(26, 7, 4, _matrixRed) : _matrix.drawFastHLine(26, 7, 4, _matrixGreen);
+    }
 
     _matrix.show();
 }

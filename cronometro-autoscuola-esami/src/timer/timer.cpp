@@ -19,13 +19,10 @@ void Timer::setup(){
     pinMode(REMOTE_SWITCH, INPUT);
     pinMode(START_BUTTON, INPUT);
     pinMode(RESET_BUTTON, INPUT);
-    pinMode(LEDMATRIX1_SWITCH, INPUT);
-    pinMode(LEDMATRIX2_SWITCH, INPUT);
+    pinMode(LEDMATRIX_SWITCH, INPUT);
     pinMode(LEDMATRIX_DATA, OUTPUT);
     
     int serverSwitch = digitalRead(SERVER_SWITCH);
-    
-
     if(serverSwitch == LOW){
         Serial.println("[Timer] Starting as server...");
         _isServer = true;
