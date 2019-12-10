@@ -9,8 +9,6 @@
 #include <heltec.h>
 #include <FastLED.h>
 
-#include <Fonts/Picopixel.h>
-#include <Fonts/Tiny3x3a2pt7b.h>
 #include <Fonts/TomThumb.h>
 
 
@@ -74,7 +72,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     _webserver.begin();
     FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
     _matrix.begin();
-    _matrix.setBrightness(20);
+    _matrix.setBrightness(_matrixBrightness[_matrixBrightnessState]);
     _matrix.setTextWrap(false);
     _matrixRed = _matrix.Color(255, 0, 0);
     _matrixGreen = _matrix.Color(0, 255, 0);
@@ -94,6 +92,7 @@ void TimerServer::loop(){
     }
 
     if(digitalRead(RESET_BUTTON) == LOW) timerReset();
+    if(digitalRead(LEDMATRIX_BRIGHTNESS_BUTTON) == HIGH) matrixBrightnessCicle();
 
     matrixRefresh();
 }
@@ -272,4 +271,13 @@ void TimerServer::matrixRefresh(){
     }
 
     _matrix.show();
+}
+
+void TimerServer::matrixBrightnessCicle(){
+    if(_lastMatrixBrightnessCicle > 0 && _lastMatrixBrightnessCicle + 1000 > millis()) return;
+    _lastMatrixBrightnessCicle = millis();
+
+    _matrixBrightnessState == 4 ? _matrixBrightnessState = 0 : _matrixBrightnessState++;
+    
+    _matrix.setBrightness(_matrixBrightness[_matrixBrightnessState]);
 }

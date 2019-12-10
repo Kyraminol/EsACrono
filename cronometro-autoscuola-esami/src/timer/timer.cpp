@@ -21,6 +21,7 @@ void Timer::setup(){
     pinMode(RESET_BUTTON, INPUT);
     pinMode(LEDMATRIX_SWITCH, INPUT);
     pinMode(LEDMATRIX_DATA, OUTPUT);
+    pinMode(LEDMATRIX_BRIGHTNESS_BUTTON, INPUT);
     
     int serverSwitch = digitalRead(SERVER_SWITCH);
     if(serverSwitch == LOW){
