@@ -101,6 +101,7 @@ String TimerClient::getClientType(){
 void TimerClient::sendMsg(String msg){
     msg += getClientType();
     sendLoRa(msg);
+    sendRequest(_endpoint + "timer?" + msg);
 }
 
 

@@ -34,16 +34,6 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     WiFi.softAP(_serverName.c_str());
     
     _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
-        int headers = request->headers();
-        for(int i=0;i<headers;i++){
-            AsyncWebHeader* h = request->getHeader(i);
-            Serial.printf("HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
-        }
-        int params = request->params();
-        for(int i=0;i<params;i++){
-            AsyncWebParameter* p = request->getParam(i);
-            Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
 
         if(!request->hasParam("t") && !request->hasParam("s")){
             request->send(400);
@@ -62,8 +52,16 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
         else
             timerSet(timer, stop);
 
-        String responseText = String(_results[timer], 1);
-        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", responseText);
+        AsyncWebServerResponse *response = request->beginResponse(200);
+        if(!request->hasParam("p")){
+            String params = "[HTTP][GET] ";
+            for(int i=0;i<request->params();i++){
+                AsyncWebParameter* p = request->getParam(i);
+                params += "&" + p->name() + "=" + p->value();
+            }
+            Serial.println(params);
+        }
+        
         response->addHeader("Server", "TimerServer");
         response->addHeader("Connection", "keep-alive");
         request->send(response);
@@ -82,14 +80,6 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
 void TimerServer::loop(){
     receiveLoRa();
     pingCheck();
-    if(digitalRead(GPIO_NUM_39) == LOW){
-        Serial.print("Timer 1: ");
-        Serial.println(_timers[0]);
-        Serial.println(_results[0]);
-        Serial.print("Timer 2: ");
-        Serial.println(_timers[1]);
-        Serial.println(_results[1]);
-    }
 
     if(digitalRead(RESET_BUTTON) == LOW) timerReset();
     if(digitalRead(LEDMATRIX_BRIGHTNESS_BUTTON) == HIGH) matrixBrightnessCicle();
@@ -151,6 +141,7 @@ void TimerServer::receiveLoRa(){
         else if(name == "r")
             value == "0" ? reset = false : reset = true;
     }
+    if(pinged == false) Serial.println("[LoRa] " + msg);
     if(pinged == true)
         clientPinged(timer, stop);
     else if(reset == true)
@@ -160,8 +151,13 @@ void TimerServer::receiveLoRa(){
 };
 
 void TimerServer::clientPinged(int timer, bool stop){
-    int n = 0;
-    timer == 0 ? n = 0 + stop : n = 2 + stop;
+    int n = timer == 0 ? 0 + stop : 2 + stop;
+    if(_pings[n] == 0){
+        String toPrint = "[CLIENT]";
+        toPrint += timer == 0 ? "[T0]" : "[T1]";
+        toPrint += stop == false ? "[START]" : "[STOP]";
+        Serial.println(toPrint + " Connected");
+    }
     _pings[n] = millis();
 }
 
@@ -169,9 +165,12 @@ void TimerServer::pingCheck(){
     if(_lastPingCheck > 0 && _lastPingCheck + _pingInterval > millis()) return;
     _lastPingCheck = millis();
     for(int i = 0; i < 4; i++){
-        if(_pings[i] > 0 && _pings[i] + _pingInterval + 200 < millis()){
+        if(_pings[i] > 0 && _pings[i] + _pingInterval + 500 < millis()){
             _pings[i] = 0;
-            Serial.println("Client disconnected: " + String(i));
+            String toPrint = "[CLIENT]";
+            toPrint += i / 2 == 0 ? "[T0]" : "[T1]";
+            toPrint += i % 2 == 0 ? "[START]" : "[STOP]";
+            Serial.println(toPrint + " Disconnected");
         }
     }
 }
