@@ -40,6 +40,12 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
         delay(500);
     }
     _http.setReuse(true);
+    _udp.connect(IPAddress(192,168,4,1), 404);
+    _udp.onPacket([this](AsyncUDPPacket packet){
+        Serial.print("[UDP] ");
+        Serial.write(packet.data(), packet.length());
+        Serial.println();
+    });
     sendPing();
     FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
     _matrix.begin();
@@ -86,7 +92,11 @@ void TimerClient::sendRequest(String path){
 void TimerClient::sendLoRa(String msg){
     LoRa.beginPacket();
     LoRa.print(msg);
-    LoRa.endPacket();
+    LoRa.endPacket(true);
+}
+
+void TimerClient::sendUDP(String msg){
+    _udp.print(msg + '\0');
 }
 
 String TimerClient::getClientType(){
@@ -100,10 +110,10 @@ String TimerClient::getClientType(){
 
 void TimerClient::sendMsg(String msg){
     msg += getClientType();
+    sendUDP(msg);
     sendLoRa(msg);
     sendRequest(_endpoint + "timer?" + msg);
 }
-
 
 void TimerClient::sendPing(){
     if(_lastPing > 0 && _lastPing + _pingInterval > millis()) return;
