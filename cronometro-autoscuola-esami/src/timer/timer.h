@@ -34,7 +34,7 @@ class Timer{
         TimerClient _client;
         bool _isServer = false;
         bool _isSetup = false;
-        int _pingInterval = 1800;  // milliseconds
+        int _pingInterval = 3000;  // milliseconds
 
         String _serverName = "Cronometro";
         String _clientName = "T";

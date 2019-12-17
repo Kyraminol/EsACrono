@@ -68,6 +68,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     });
     _webserver.begin();
     FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
+    FastLED.setMaxRefreshRate(100, true);
     _matrix.begin();
     _matrix.setBrightness(_matrixBrightness[_matrixBrightnessState]);
     _matrix.setTextWrap(false);

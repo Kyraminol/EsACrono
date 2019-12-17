@@ -38,12 +38,14 @@ class TimerClient{
         CRGB _matrixLeds[_matrixSize];
         FastLED_NeoMatrix _matrix;
         int _lastMatrixRefresh = 0;
+        static const int _matrixRefreshInterval = 20;
         void matrixRefresh();
 
-        void sendMsg(String msg);
+        void sendMsg(String msg, bool skipInterval = false);
         String getClientType();
-
-        void sendMsgRaw(String msg);
+        int _lastMsgSent = 0;
+        static const int _msgSendInterval = 10;
+        void sendMsgRaw(String msg, bool skipInterval = false);
 };
 
 #endif

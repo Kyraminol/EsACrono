@@ -135,12 +135,14 @@ String TimerClient::getClientType(){
     return clientType;
 }
 
-void TimerClient::sendMsg(String msg){
+void TimerClient::sendMsg(String msg, bool skipInterval){
     msg += getClientType();
-    sendMsgRaw(msg);
+    sendMsgRaw(msg, skipInterval);
 }
 
-void TimerClient::sendMsgRaw(String msg){
+void TimerClient::sendMsgRaw(String msg, bool skipInterval){
+    if(!skipInterval && _lastMsgSent > 0 && _lastMsgSent + _msgSendInterval > millis()) return;
+    _lastMsgSent = millis();
     sendLoRa(msg);
     sendRequest(_endpoint + "timer?" + msg);
 }
@@ -149,10 +151,12 @@ void TimerClient::sendPing(){
     if(_lastPing > 0 && _lastPing + _pingInterval > millis()) return;
     _lastPing = millis();
     String msg = "p=1";
-    sendMsg(msg);
+    sendMsg(msg, true);
 }
 
 void TimerClient::matrixRefresh(){
+    if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + _matrixRefreshInterval > millis()) return;
+    _lastMatrixRefresh = millis();
     _matrix.drawLine(0, 0, 4, 4, _matrix.Color(255, 0, 0));
     _matrix.drawLine(4, 0, 0, 4, _matrix.Color(255, 0, 0));
 
