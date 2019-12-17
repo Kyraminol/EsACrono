@@ -7,6 +7,7 @@
 #include <Wifi.h>
 #include <heltec.h>
 #include <FastLED.h>
+#include <Wire.h>
 
 
 TimerClient::TimerClient() :
@@ -24,13 +25,9 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _serverName = serverName;
     _clientName = clientName;
     _pingInterval = pingInterval;
-    _t = digitalRead(TIMER_SWITCH);
-    _s = digitalRead(STOP_SWITCH);
-
+    _r = digitalRead(REMOTE_SWITCH);
     Serial.print("[Client] Starting Bluetooth...");
     _SerialBT.begin(_clientName.c_str());
-    Serial.println("ok");
-
     Serial.print("[Client] Starting WiFi...");
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
@@ -40,30 +37,64 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
         delay(500);
     }
     _http.setReuse(true);
-    _udp.connect(IPAddress(192,168,4,1), 404);
-    _udp.onPacket([this](AsyncUDPPacket packet){
-        Serial.print("[UDP] ");
-        Serial.write(packet.data(), packet.length());
-        Serial.println();
-    });
-    sendPing();
-    FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
-    _matrix.begin();
-    _matrix.setBrightness(20);
-    _matrix.setTextWrap(false);
+    if(_r == HIGH){
+        _t = digitalRead(TIMER_SWITCH);
+        _s = digitalRead(STOP_SWITCH);
+
+        sendPing();
+        FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
+        _matrix.begin();
+        _matrix.setBrightness(20);
+        _matrix.setTextWrap(false);
+    } else {
+        Serial.println("ok");
+        Wire.begin(17, 22);
+    }
 }
 
 void TimerClient::loop(){
-    if(digitalRead(START_BUTTON) == LOW){
-        String msg = "";
-        sendMsg(msg);
-    }    
-    if(digitalRead(RESET_BUTTON) == LOW){
-        String msg = "r=1";
-        sendMsg(msg);
+    if(_r == HIGH){
+        if(digitalRead(START_BUTTON) == LOW){
+            String msg = "";
+            sendMsg(msg);
+        }    
+        if(digitalRead(RESET_BUTTON) == LOW){
+            String msg = "r=1";
+            sendMsg(msg);
+        }
+        sendPing();
+        matrixRefresh();
+    } else {
+        Wire.requestFrom(0x5F, 1);
+        while(Wire.available()){
+            char c = Wire.read();
+            if(c != 0){
+                Serial.println(c, HEX);
+                switch(c){
+                case 0x31:
+                    sendMsgRaw("t=0&s=0");
+                    break;
+                case 0x32:
+                    sendMsgRaw("t=0&s=1");
+                    break;
+                case 0x33:
+                    sendMsgRaw("t=1&s=0");
+                    break;
+                case 0x34:
+                    sendMsgRaw("t=1&s=1");
+                    break;
+                case 0x35:
+                    sendMsgRaw("t=0&s=1&r=1");
+                    break;
+                case 0x36:
+                    sendMsgRaw("t=1&s=1&r=1");
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
     }
-    sendPing();
-    matrixRefresh();
 }
 
 void TimerClient::sendRequest(String path){
@@ -95,10 +126,6 @@ void TimerClient::sendLoRa(String msg){
     LoRa.endPacket(true);
 }
 
-void TimerClient::sendUDP(String msg){
-    _udp.print(msg + '\0');
-}
-
 String TimerClient::getClientType(){
     String clientType = "";
     _t = digitalRead(TIMER_SWITCH);
@@ -110,7 +137,10 @@ String TimerClient::getClientType(){
 
 void TimerClient::sendMsg(String msg){
     msg += getClientType();
-    sendUDP(msg);
+    sendMsgRaw(msg);
+}
+
+void TimerClient::sendMsgRaw(String msg){
     sendLoRa(msg);
     sendRequest(_endpoint + "timer?" + msg);
 }
