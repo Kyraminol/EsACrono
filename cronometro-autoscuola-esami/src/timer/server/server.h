@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <BluetoothSerial.h>
 #include <ESPAsyncWebServer.h>
+#include <AsyncUDP.h>
 
 #include <FastLED_NeoMatrix.h>
 
@@ -24,6 +25,7 @@ class TimerServer{
         int _pingInterval = 0;
         BluetoothSerial _SerialBT;
         AsyncWebServer _webserver;
+        AsyncUDP _udp;
         void receiveLoRa();
         void clientPinged(int timer, bool stop);
         int _pings[4] = {0, 0, 0, 0};

@@ -33,7 +33,39 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     _SerialBT.begin(_serverName.c_str());
     WiFi.mode(WIFI_AP);
     WiFi.softAP(_serverName.c_str());
+    _udp.listen(404);
 
+    _udp.onPacket([this](AsyncUDPPacket packet){
+        String msg = String((char*)packet.data());
+        int timer = -1;
+        bool stop = false, pinged = false, reset = false;
+        size_t start = 0;
+        while (start < msg.length()){
+            int end = msg.indexOf('&', start);
+            if (end < 0) end = msg.length();
+            int equal = msg.indexOf('=', start);
+            if (equal < 0 || equal > end) equal = end;
+            String name = msg.substring(start, equal);
+            String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
+            start = end + 1;
+            if(name == "t")
+                value == "0" ? timer = 0 : timer = 1;
+            else if(name == "s")
+                value == "0" ? stop = false : stop = true;
+            else if(name == "p")
+                value == "0" ? pinged = false : pinged = true;
+            else if(name == "r")
+                value == "0" ? reset = false : reset = true;
+        }
+        if(pinged == false) Serial.println("[UDP] " + msg);
+        if(pinged == true)
+            clientPinged(timer, stop);
+        else if(reset == true)
+            timerReset(timer);
+        else
+            timerSet(timer, stop);
+        packet.print("200");
+    });
     _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
         if(!request->hasParam("t") && !request->hasParam("s")){
             request->send(400);

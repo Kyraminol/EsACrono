@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <FastLED_NeoMatrix.h>
+#include <AsyncUDP.h>
 
 
 class TimerClient{
@@ -25,6 +26,7 @@ class TimerClient{
         String _endpoint = "/api/v1/";
         WiFiClient _client;
         HTTPClient _http;
+        AsyncUDP _udp;
         
         void sendRequest(String path);
         void sendLoRa(String msg);
@@ -46,6 +48,7 @@ class TimerClient{
         int _lastMsgSent = 0;
         static const int _msgSendInterval = 10;
         void sendMsgRaw(String msg, bool skipInterval = false);
+        void sendUDP(String msg);
 };
 
 #endif

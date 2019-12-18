@@ -37,6 +37,12 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
         delay(500);
     }
     _http.setReuse(true);
+    _udp.connect(IPAddress(192,168,4,1), 404);
+    _udp.onPacket([this](AsyncUDPPacket packet){
+        Serial.print("[UDP] ");
+        Serial.write(packet.data(), packet.length());
+        Serial.println();
+    });
     if(_r == HIGH){
         _t = digitalRead(TIMER_SWITCH);
         _s = digitalRead(STOP_SWITCH);
@@ -126,6 +132,10 @@ void TimerClient::sendLoRa(String msg){
     LoRa.endPacket(true);
 }
 
+void TimerClient::sendUDP(String msg){
+    _udp.print(msg + '\0');
+}
+
 String TimerClient::getClientType(){
     String clientType = "";
     _t = digitalRead(TIMER_SWITCH);
@@ -144,7 +154,7 @@ void TimerClient::sendMsgRaw(String msg, bool skipInterval){
     if(!skipInterval && _lastMsgSent > 0 && _lastMsgSent + _msgSendInterval > millis()) return;
     _lastMsgSent = millis();
     sendLoRa(msg);
-    sendRequest(_endpoint + "timer?" + msg);
+    sendUDP(msg);
 }
 
 void TimerClient::sendPing(){
