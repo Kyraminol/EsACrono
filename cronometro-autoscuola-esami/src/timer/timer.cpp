@@ -22,7 +22,8 @@ void Timer::setup(){
     pinMode(LEDMATRIX_SWITCH, INPUT);
     pinMode(LEDMATRIX_DATA, OUTPUT);
     pinMode(LEDMATRIX_BRIGHTNESS_BUTTON, INPUT);
-    
+    pinMode(RESISTOR_PASSWORD, INPUT);
+
     int serverSwitch = digitalRead(SERVER_SWITCH);
     if(serverSwitch == LOW){
         Serial.println("[Timer] Starting as server...");

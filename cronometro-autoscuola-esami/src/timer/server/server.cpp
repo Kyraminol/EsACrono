@@ -180,6 +180,9 @@ void TimerServer::receiveLoRa(){
         timerReset(timer);
     else
         timerSet(timer, stop);
+    LoRa.beginPacket();
+    LoRa.print(200);
+    LoRa.endPacket(true);
 };
 
 void TimerServer::clientPinged(int timer, bool stop){

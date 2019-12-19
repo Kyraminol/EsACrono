@@ -49,6 +49,7 @@ class TimerClient{
         static const int _msgSendInterval = 10;
         void sendMsgRaw(String msg, bool skipInterval = false);
         void sendUDP(String msg);
+        void receiveLoRa();
 };
 
 #endif

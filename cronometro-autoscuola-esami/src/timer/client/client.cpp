@@ -27,15 +27,12 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _pingInterval = pingInterval;
     _r = digitalRead(REMOTE_SWITCH);
     Serial.print("[Client] Starting Bluetooth...");
-    _SerialBT.begin(_clientName.c_str());
-    Serial.print("[Client] Starting WiFi...");
+    _SerialBT.begin(_clientName.c_str()) ? Serial.println("ok") : Serial.println("error");
+    Serial.println("[Client] Starting WiFi...");
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);
     WiFi.begin(_serverName.c_str());
-    for(int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++){
-        delay(500);
-    }
     _http.setReuse(true);
     _udp.connect(IPAddress(192,168,4,1), 404);
     _udp.onPacket([this](AsyncUDPPacket packet){
@@ -101,6 +98,7 @@ void TimerClient::loop(){
             }
         }
     }
+    receiveLoRa();
 }
 
 void TimerClient::sendRequest(String path){
@@ -171,4 +169,15 @@ void TimerClient::matrixRefresh(){
     _matrix.drawLine(4, 0, 0, 4, _matrix.Color(255, 0, 0));
 
     _matrix.show();
+}
+
+void TimerServer::receiveLoRa(){
+    if(LoRa.parsePacket() == 0) return;
+
+    String msg = "";
+ 
+    while (LoRa.available()){
+        msg += (char)LoRa.read();
+    }
+    Serial.println("[LoRa] " + msg);
 }
