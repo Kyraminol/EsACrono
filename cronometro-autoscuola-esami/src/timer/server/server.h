@@ -12,7 +12,7 @@
 class TimerServer{
     public:
         TimerServer();
-        void setup(String serverName, String clientName, int pingInterval);
+        void setup(String serverName, String clientName, String password, int pingInterval);
         void loop();
     private:
         bool _isSetup = false;
@@ -22,6 +22,7 @@ class TimerServer{
         void timerReset(int timer=-1);
         String _serverName = "";
         String _clientName = "";
+        String _password = "";
         int _pingInterval = 0;
         BluetoothSerial _SerialBT;
         AsyncWebServer _webserver;

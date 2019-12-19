@@ -12,12 +12,13 @@
 class TimerClient{
     public:
         TimerClient();
-        void setup(String serverName, String clientName, int pingInterval);
+        void setup(String serverName, String clientName, String password, int pingInterval);
         void loop();
     private:
         bool _isSetup = false;
         String _clientName = "";
         String _serverName = "";
+        String _password = "";
         int _pingInterval = 0;
         BluetoothSerial _SerialBT;
         int _t = 0;

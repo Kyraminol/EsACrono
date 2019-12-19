@@ -24,14 +24,15 @@ void Timer::setup(){
     pinMode(LEDMATRIX_BRIGHTNESS_BUTTON, INPUT);
     pinMode(RESISTOR_PASSWORD, INPUT);
 
+    String password = "";
     int serverSwitch = digitalRead(SERVER_SWITCH);
     if(serverSwitch == LOW){
         Serial.println("[Timer] Starting as server...");
         _isServer = true;
-        _server.setup(_serverName, _clientName, _pingInterval);
+        _server.setup(_serverName, _clientName, password, _pingInterval);
     } else {
         Serial.println("[Timer] Starting as client...");
-        _client.setup(_serverName, _clientName, _pingInterval);
+        _client.setup(_serverName, _clientName, password, _pingInterval);
     }
     Serial.println("[Timer] Setup done");
 };

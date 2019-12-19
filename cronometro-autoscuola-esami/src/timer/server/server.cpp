@@ -20,7 +20,7 @@ TimerServer::TimerServer() :
 {  
 }
 
-void TimerServer::setup(String serverName, String clientName, int pingInterval){
+void TimerServer::setup(String serverName, String clientName, String password, int pingInterval){
     if(_isSetup){
         Serial.println("[Server] Already setup");
         return;
@@ -28,6 +28,7 @@ void TimerServer::setup(String serverName, String clientName, int pingInterval){
     _isSetup = true;
     _serverName = serverName;
     _clientName = clientName;
+    _password = password;
     _pingInterval = pingInterval;
     
     _SerialBT.begin(_serverName.c_str());

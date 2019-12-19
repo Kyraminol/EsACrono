@@ -16,7 +16,7 @@ TimerClient::TimerClient() :
 {  
 }
 
-void TimerClient::setup(String serverName, String clientName, int pingInterval){
+void TimerClient::setup(String serverName, String clientName, String password, int pingInterval){
     if(_isSetup){
         Serial.println("[Client] Already setup");
         return;
@@ -24,6 +24,7 @@ void TimerClient::setup(String serverName, String clientName, int pingInterval){
     _isSetup = true;
     _serverName = serverName;
     _clientName = clientName;
+    _password = password;
     _pingInterval = pingInterval;
     _r = digitalRead(REMOTE_SWITCH);
     Serial.print("[Client] Starting Bluetooth...");
