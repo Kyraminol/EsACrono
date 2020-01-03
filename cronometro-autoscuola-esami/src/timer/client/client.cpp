@@ -172,7 +172,7 @@ void TimerClient::matrixRefresh(){
     _matrix.show();
 }
 
-void TimerServer::receiveLoRa(){
+void TimerClient::receiveLoRa(){
     if(LoRa.parsePacket() == 0) return;
 
     String msg = "";
