@@ -114,8 +114,10 @@ void TimerServer::loop(){
     receiveLoRa();
     pingCheck();
 
+    if(digitalRead(SERVER_T0_START) == LOW) timerToggle(0);
+    if(digitalRead(SERVER_T1_START) == LOW) timerToggle(1);
     if(digitalRead(RESET_BUTTON) == LOW) timerReset();
-    if(digitalRead(LEDMATRIX_BRIGHTNESS_BUTTON) == HIGH) matrixBrightnessCicle();
+    if(digitalRead(LEDMATRIX_BRIGHTNESS_BUTTON) == LOW) matrixBrightnessCicle();
 
     matrixRefresh();
 }
@@ -315,4 +317,10 @@ void TimerServer::matrixBrightnessCicle(){
     _matrixBrightnessState == 4 ? _matrixBrightnessState = 0 : _matrixBrightnessState++;
     
     _matrix.setBrightness(_matrixBrightness[_matrixBrightnessState]);
+}
+
+void TimerServer::timerToggle(int timer){
+    if(_lastTimerToggle > 0 && _lastTimerToggle + _timerToggleInterval > millis()) return;
+    _lastTimerToggle = millis();
+    _timers[timer] == 0 ? timerSet(timer, false) : timerSet(timer, true);
 }

@@ -48,9 +48,12 @@ class TimerServer{
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
         int _matrixBrightnessState = 1;
-        int _matrixBrightness[5] = {10, 20, 50, 100, 255};
+        int _matrixBrightness[5] = {10, 20, 50, 100, 150};
         int _lastMatrixBrightnessCicle = 0;
         void matrixBrightnessCicle();
+        int _lastTimerToggle = 0;
+        static const int _timerToggleInterval = 1000;
+        void timerToggle(int timer);
 };
 
 #endif

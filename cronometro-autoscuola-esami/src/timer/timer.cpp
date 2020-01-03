@@ -25,6 +25,8 @@ void Timer::setup(){
     pinMode(RESISTOR_PASSWORD, INPUT);
 
     String password = "";
+    int resistorValue = analogRead(RESISTOR_PASSWORD);
+
     int serverSwitch = digitalRead(SERVER_SWITCH);
     if(serverSwitch == LOW){
         Serial.println("[Timer] Starting as server...");
