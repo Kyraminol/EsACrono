@@ -282,6 +282,7 @@ void TimerServer::execMsg(const String& msg){
             else timerSet(timer, stop);
         } else timerToggle(timer);
     }
+    params.free();
 }
 
 void TimerServer::parseMsg(LinkedList<RequestParameter *>& params, const String& msg){
