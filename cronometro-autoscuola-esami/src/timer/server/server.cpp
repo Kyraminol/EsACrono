@@ -38,33 +38,7 @@ void TimerServer::setup(String serverName, String clientName, String password, i
 
     _udp.onPacket([this](AsyncUDPPacket packet){
         String msg = String((char*)packet.data());
-        int timer = -1;
-        bool stop = false, pinged = false, reset = false;
-        size_t start = 0;
-        while (start < msg.length()){
-            int end = msg.indexOf('&', start);
-            if (end < 0) end = msg.length();
-            int equal = msg.indexOf('=', start);
-            if (equal < 0 || equal > end) equal = end;
-            String name = msg.substring(start, equal);
-            String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
-            start = end + 1;
-            if(name == "t")
-                value == "0" ? timer = 0 : timer = 1;
-            else if(name == "s")
-                value == "0" ? stop = false : stop = true;
-            else if(name == "p")
-                value == "0" ? pinged = false : pinged = true;
-            else if(name == "r")
-                value == "0" ? reset = false : reset = true;
-        }
-        if(pinged == false) Serial.println("[UDP] " + msg);
-        if(pinged == true)
-            clientPinged(timer, stop);
-        else if(reset == true)
-            timerReset(timer);
-        else
-            timerSet(timer, stop);
+        execMsg(msg);
         packet.print("200");
     });
     _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -149,40 +123,9 @@ void TimerServer::timerReset(int timer){
 
 void TimerServer::receiveLoRa(){
     if(LoRa.parsePacket() == 0) return;
-
     String msg = "";
- 
-    while (LoRa.available()){
-        msg += (char)LoRa.read();
-    }
-
-    int timer = -1;
-    bool stop = false, pinged = false, reset = false;
-    size_t start = 0;
-    while (start < msg.length()){
-        int end = msg.indexOf('&', start);
-        if (end < 0) end = msg.length();
-        int equal = msg.indexOf('=', start);
-        if (equal < 0 || equal > end) equal = end;
-        String name = msg.substring(start, equal);
-        String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
-        start = end + 1;
-        if(name == "t")
-            value == "0" ? timer = 0 : timer = 1;
-        else if(name == "s")
-            value == "0" ? stop = false : stop = true;
-        else if(name == "p")
-            value == "0" ? pinged = false : pinged = true;
-        else if(name == "r")
-            value == "0" ? reset = false : reset = true;
-    }
-    if(pinged == false) Serial.println("[LoRa] " + msg);
-    if(pinged == true)
-        clientPinged(timer, stop);
-    else if(reset == true)
-        timerReset(timer);
-    else
-        timerSet(timer, stop);
+    while (LoRa.available()) msg += (char)LoRa.read();
+    execMsg(msg);
     LoRa.beginPacket();
     LoRa.print(200);
     LoRa.endPacket(true);
@@ -323,4 +266,53 @@ void TimerServer::timerToggle(int timer){
     if(_lastTimerToggle > 0 && _lastTimerToggle + _timerToggleInterval > millis()) return;
     _lastTimerToggle = millis();
     _timers[timer] == 0 ? timerSet(timer, false) : timerSet(timer, true);
+}
+
+void TimerServer::execMsg(const String& msg){
+    LinkedList<RequestParameter *> params([](RequestParameter *p){ delete p;});
+    parseMsg(params, msg);
+
+    int timer = getParam(params, "t")->value() == "0" ? 0 : 1;
+
+    if(hasParam(params, "r")) timerReset(timer);
+    else {
+        if(hasParam(params, "s")){
+            bool stop = getParam(params, "s")->value() == "0" ? false : true;
+            if(hasParam(params, "p")) clientPinged(timer, stop); 
+            else timerSet(timer, stop);
+        } else timerToggle(timer);
+    }
+}
+
+void TimerServer::parseMsg(LinkedList<RequestParameter *>& params, const String& msg){
+    size_t start = 0;
+    while (start < msg.length()){
+        int end = msg.indexOf('&', start);
+        if (end < 0) end = msg.length();
+        int equal = msg.indexOf('=', start);
+        if (equal < 0 || equal > end) equal = end;
+        String name = msg.substring(start, equal);
+        String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
+        RequestParameter *param = new RequestParameter(name, value);
+        params.add(param);
+        start = end + 1;
+    }
+}
+
+RequestParameter* TimerServer::getParam(const LinkedList<RequestParameter *>& params, const String& name){
+  for(const auto& p: params){
+    if(p->name() == name){
+      return p;
+    }
+  }
+  return nullptr;
+}
+
+bool TimerServer::hasParam(const LinkedList<RequestParameter *>& params, const String& name){
+  for(const auto& p: params){
+    if(p->name() == name){
+      return true;
+    }
+  }
+  return false;
 }

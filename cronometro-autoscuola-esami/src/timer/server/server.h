@@ -9,6 +9,18 @@
 #include <FastLED_NeoMatrix.h>
 
 
+class RequestParameter{
+    private:
+        String _name;
+        String _value;
+
+    public:
+        RequestParameter(const String& name, const String& value): _name(name), _value(value){}
+        const String& name() const { return _name; }
+        const String& value() const { return _value; }
+};
+
+
 class TimerServer{
     public:
         TimerServer();
@@ -54,6 +66,11 @@ class TimerServer{
         int _lastTimerToggle = 0;
         static const int _timerToggleInterval = 1000;
         void timerToggle(int timer);
+
+        void parseMsg(LinkedList<RequestParameter *>& paramsList, const String& params);
+        void execMsg(const String& msg);
+        bool hasParam(const LinkedList<RequestParameter *>& params, const String& name);
+        RequestParameter* getParam(const LinkedList<RequestParameter *>& params, const String& name);
 };
 
 #endif
