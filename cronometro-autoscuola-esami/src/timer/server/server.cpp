@@ -267,8 +267,8 @@ void TimerServer::matrixBrightnessCicle(){
 }
 
 void TimerServer::timerToggle(int timer){
-    if(_lastTimerToggle > 0 && _lastTimerToggle + _timerToggleInterval > millis()) return;
-    _lastTimerToggle = millis();
+    if(_lastTimerToggle[timer] > 0 && _lastTimerToggle[timer] + _timerToggleInterval > millis()) return;
+    _lastTimerToggle[timer] = millis();
     _timers[timer] == 0 ? timerSet(timer, false) : timerSet(timer, true);
 }
 
