@@ -42,3 +42,37 @@ void Timer::setup(){
 void Timer::loop(){
     _isServer ? _server.loop() : _client.loop();
 };
+
+
+void parseMsg(LinkedList<RequestParameter *>& params, const String& msg){
+    size_t start = 0;
+    while (start < msg.length()){
+        int end = msg.indexOf('&', start);
+        if (end < 0) end = msg.length();
+        int equal = msg.indexOf('=', start);
+        if (equal < 0 || equal > end) equal = end;
+        String name = msg.substring(start, equal);
+        String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
+        RequestParameter *param = new RequestParameter(name, value);
+        params.add(param);
+        start = end + 1;
+    }
+}
+
+RequestParameter* getParam(const LinkedList<RequestParameter *>& params, const String& name){
+  for(const auto& p: params){
+    if(p->name() == name){
+      return p;
+    }
+  }
+  return nullptr;
+}
+
+bool hasParam(const LinkedList<RequestParameter *>& params, const String& name){
+  for(const auto& p: params){
+    if(p->name() == name){
+      return true;
+    }
+  }
+  return false;
+}

@@ -4,6 +4,7 @@
 #include "server/server.h"
 #include "client/client.h"
 
+#include <ESPAsyncWebServer.h>
 
 #define SERVER_SWITCH GPIO_NUM_36
 #define TIMER_SWITCH GPIO_NUM_37
@@ -42,5 +43,9 @@ class Timer{
         String _serverName = "Cronometro";
         String _clientName = "T";
 };
+
+void parseMsg(LinkedList<RequestParameter *>& paramsList, const String& params);
+bool hasParam(const LinkedList<RequestParameter *>& params, const String& name);
+RequestParameter* getParam(const LinkedList<RequestParameter *>& params, const String& name);
 
 #endif

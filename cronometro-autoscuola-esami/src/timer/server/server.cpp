@@ -39,7 +39,7 @@ void TimerServer::setup(String serverName, String clientName, String password, i
     _udp.onPacket([this](AsyncUDPPacket packet){
         String msg = String((char*)packet.data());
         execMsg(msg);
-        packet.print("200");
+        packet.print(getResponse() + '\0');
     });
     _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
         if(!request->hasParam("t") && !request->hasParam("s")){
@@ -100,10 +100,12 @@ void TimerServer::timerSet(int timer, bool stop){
     if(!stop){
         if(_timers[timer] == 0){
             _timers[timer] = millis();
+            _stopped[timer] = 0;
         }
     } else {
         if(_timers[timer] > 0){
             _results[timer] = millis() - _timers[timer];
+            _stopped[timer] = millis();
             _timers[timer] = 0;
         }
     }
@@ -114,10 +116,12 @@ void TimerServer::timerReset(int timer){
         for(int i=0; i < 2; i++){
             _timers[i] = 0;
             _results[i] = 0;
+            _stopped[i] = 0;
         }
     } else {
         _timers[timer] = 0;
         _results[timer] = 0;
+        _stopped[timer] = 0;
     }
 }
 
@@ -254,7 +258,7 @@ void TimerServer::matrixRefresh(){
 }
 
 void TimerServer::matrixBrightnessCicle(){
-    if(_lastMatrixBrightnessCicle > 0 && _lastMatrixBrightnessCicle + 1000 > millis()) return;
+    if(_lastMatrixBrightnessCicle > 0 && _lastMatrixBrightnessCicle + 200 > millis()) return;
     _lastMatrixBrightnessCicle = millis();
 
     _matrixBrightnessState == 4 ? _matrixBrightnessState = 0 : _matrixBrightnessState++;
@@ -285,35 +289,22 @@ void TimerServer::execMsg(const String& msg){
     params.free();
 }
 
-void TimerServer::parseMsg(LinkedList<RequestParameter *>& params, const String& msg){
-    size_t start = 0;
-    while (start < msg.length()){
-        int end = msg.indexOf('&', start);
-        if (end < 0) end = msg.length();
-        int equal = msg.indexOf('=', start);
-        if (equal < 0 || equal > end) equal = end;
-        String name = msg.substring(start, equal);
-        String value = equal + 1 < end ? msg.substring(equal + 1, end) : String();
-        RequestParameter *param = new RequestParameter(name, value);
-        params.add(param);
-        start = end + 1;
+String TimerServer::getResponse(){
+    String response = "";
+    for(int i = 0; i < 2; i++){
+        if(response != "")
+            response += "&";
+        response += "t" + String(i) + "=";
+        if(_timers[i] > 0)
+            response += "0";
+        else {
+            if(_results[i] == 0 || (millis() - _stopped[i]) > 8000)
+                response += "1";
+            else
+                response += "0";
+        }
     }
-}
-
-RequestParameter* TimerServer::getParam(const LinkedList<RequestParameter *>& params, const String& name){
-  for(const auto& p: params){
-    if(p->name() == name){
-      return p;
-    }
-  }
-  return nullptr;
-}
-
-bool TimerServer::hasParam(const LinkedList<RequestParameter *>& params, const String& name){
-  for(const auto& p: params){
-    if(p->name() == name){
-      return true;
-    }
-  }
-  return false;
+    response += "&b=" + String(_matrixBrightness[_matrixBrightnessState]);
+    Serial.println(response);
+    return response;
 }

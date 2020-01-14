@@ -30,6 +30,7 @@ class TimerServer{
         bool _isSetup = false;
         int _timers[2] = {0, 0};
         float _results[2];
+        int _stopped[2] = {0, 0};
         void timerSet(int timer, bool stop);
         void timerReset(int timer=-1);
         String _serverName = "";
@@ -60,17 +61,16 @@ class TimerServer{
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
         int _matrixBrightnessState = 1;
-        int _matrixBrightness[5] = {10, 20, 50, 100, 150};
+        int _matrixBrightness[5] = {5, 25, 50, 75, 90};
         int _lastMatrixBrightnessCicle = 0;
         void matrixBrightnessCicle();
         int _lastTimerToggle = 0;
         static const int _timerToggleInterval = 1000;
         void timerToggle(int timer);
 
-        void parseMsg(LinkedList<RequestParameter *>& paramsList, const String& params);
         void execMsg(const String& msg);
-        bool hasParam(const LinkedList<RequestParameter *>& params, const String& name);
-        RequestParameter* getParam(const LinkedList<RequestParameter *>& params, const String& name);
+
+        String getResponse();
 };
 
 #endif

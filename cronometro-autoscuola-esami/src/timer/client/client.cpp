@@ -37,9 +37,9 @@ void TimerClient::setup(String serverName, String clientName, String password, i
     _http.setReuse(true);
     _udp.connect(IPAddress(192,168,4,1), 404);
     _udp.onPacket([this](AsyncUDPPacket packet){
-        Serial.print("[UDP] ");
-        Serial.write(packet.data(), packet.length());
-        Serial.println();
+        String msg = String((char*)packet.data());
+        Serial.println(msg);
+        execMsg(msg);
     });
     if(_r == HIGH){
         _t = digitalRead(TIMER_SWITCH);
@@ -50,6 +50,8 @@ void TimerClient::setup(String serverName, String clientName, String password, i
         _matrix.begin();
         _matrix.setBrightness(20);
         _matrix.setTextWrap(false);
+        _matrix.drawFastHLine(0, 0, 5, _matrix.Color(255,0,0));
+        _matrix.show();
     } else {
         Serial.println("ok");
         Wire.begin(17, 22);
@@ -100,6 +102,7 @@ void TimerClient::loop(){
         }
     }
     receiveLoRa();
+    matrixRefresh();
 }
 
 void TimerClient::sendRequest(String path){
@@ -166,8 +169,7 @@ void TimerClient::sendPing(){
 void TimerClient::matrixRefresh(){
     if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + _matrixRefreshInterval > millis()) return;
     _lastMatrixRefresh = millis();
-    _matrix.drawLine(0, 0, 4, 4, _matrix.Color(255, 0, 0));
-    _matrix.drawLine(4, 0, 0, 4, _matrix.Color(255, 0, 0));
+    _matrixStatus ? _matrix.fillScreen(_matrixGreen) : _matrix.fillScreen(_matrixRed);
 
     _matrix.show();
 }
@@ -181,4 +183,19 @@ void TimerClient::receiveLoRa(){
         msg += (char)LoRa.read();
     }
     Serial.println("[LoRa] " + msg);
+}
+
+void TimerClient::execMsg(const String& msg){
+    LinkedList<RequestParameter *> params([](RequestParameter *p){ delete p;});
+    parseMsg(params, msg);
+
+    int timer = _t == HIGH ? 0 : 1;
+    int stop = _s == HIGH ? 0 : 1;
+
+    _matrixStatus = getParam(params, "t" + String(timer))->value() == String(stop) ? false : true;
+
+    if(hasParam(params, "b"))
+        _matrix.setBrightness(getParam(params, "b")->value().toInt());
+
+    params.free();
 }

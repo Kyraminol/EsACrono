@@ -42,6 +42,9 @@ class TimerClient{
         FastLED_NeoMatrix _matrix;
         int _lastMatrixRefresh = 0;
         static const int _matrixRefreshInterval = 20;
+        bool _matrixStatus = false;
+        int _matrixGreen = _matrix.Color(0, 255, 0);
+        int _matrixRed = _matrix.Color(255, 0, 0);
         void matrixRefresh();
 
         void sendMsg(String msg, bool skipInterval = false);
@@ -51,6 +54,8 @@ class TimerClient{
         void sendMsgRaw(String msg, bool skipInterval = false);
         void sendUDP(String msg);
         void receiveLoRa();
+
+        void execMsg(const String& msg);
 };
 
 #endif
