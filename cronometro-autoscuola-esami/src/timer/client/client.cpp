@@ -16,7 +16,7 @@ TimerClient::TimerClient() :
 {  
 }
 
-void TimerClient::setup(String serverName, String clientName, String password, int pingInterval){
+void TimerClient::setup(String serverName, String clientName, String password, int pingInterval, int LoRaMsgSize){
     if(_isSetup){
         Serial.println("[Client] Already setup");
         return;
@@ -26,6 +26,7 @@ void TimerClient::setup(String serverName, String clientName, String password, i
     _clientName = clientName;
     _password = password;
     _pingInterval = pingInterval;
+    _LoRaMsgSize = LoRaMsgSize;
     _r = digitalRead(REMOTE_SWITCH);
     Serial.print("[Client] Starting Bluetooth...");
     _SerialBT.begin(_clientName.c_str()) ? Serial.println("ok") : Serial.println("error");
@@ -41,6 +42,8 @@ void TimerClient::setup(String serverName, String clientName, String password, i
         Serial.println(msg);
         execMsg(msg);
     });
+    LoRa.setSpreadingFactor(6);
+    LoRa.setSignalBandwidth(250E3);
     if(_r == HIGH){
         _t = digitalRead(TIMER_SWITCH);
         _s = digitalRead(STOP_SWITCH);
@@ -129,9 +132,14 @@ void TimerClient::sendRequest(String path){
 }
 
 void TimerClient::sendLoRa(String msg){
-    LoRa.beginPacket();
-    LoRa.print(msg);
-    LoRa.endPacket(true);
+    char buff[_LoRaMsgSize];
+    for(int i=0; i < _LoRaMsgSize; i++){
+        buff[i] = '\0';
+    }
+    msg.toCharArray(buff, _LoRaMsgSize);
+    LoRa.beginPacket(true);
+    LoRa.write((uint8_t*)buff, (size_t)_LoRaMsgSize);
+    LoRa.endPacket();
 }
 
 void TimerClient::sendUDP(String msg){
@@ -155,8 +163,8 @@ void TimerClient::sendMsg(String msg, bool skipInterval){
 void TimerClient::sendMsgRaw(String msg, bool skipInterval){
     if(!skipInterval && _lastMsgSent > 0 && _lastMsgSent + _msgSendInterval > millis()) return;
     _lastMsgSent = millis();
-    sendLoRa(msg);
     sendUDP(msg);
+    sendLoRa(msg);
 }
 
 void TimerClient::sendPing(){
@@ -175,14 +183,11 @@ void TimerClient::matrixRefresh(){
 }
 
 void TimerClient::receiveLoRa(){
-    if(LoRa.parsePacket() == 0) return;
-
+    if(LoRa.parsePacket(_LoRaMsgSize) == 0) return;
     String msg = "";
- 
-    while (LoRa.available()){
-        msg += (char)LoRa.read();
-    }
-    Serial.println("[LoRa] " + msg);
+    while (LoRa.available()) msg += (char)LoRa.read();
+    Serial.println(msg);
+    execMsg(msg);
 }
 
 void TimerClient::execMsg(const String& msg){

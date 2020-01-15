@@ -31,10 +31,10 @@ void Timer::setup(){
     if(serverSwitch == LOW){
         Serial.println("[Timer] Starting as server...");
         _isServer = true;
-        _server.setup(_serverName, _clientName, password, _pingInterval);
+        _server.setup(_serverName, _clientName, password, _pingInterval, _LoRaMsgSize);
     } else {
         Serial.println("[Timer] Starting as client...");
-        _client.setup(_serverName, _clientName, password, _pingInterval);
+        _client.setup(_serverName, _clientName, password, _pingInterval, _LoRaMsgSize);
     }
     Serial.println("[Timer] Setup done");
 };

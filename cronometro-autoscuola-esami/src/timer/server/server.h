@@ -24,13 +24,14 @@ class RequestParameter{
 class TimerServer{
     public:
         TimerServer();
-        void setup(String serverName, String clientName, String password, int pingInterval);
+        void setup(String serverName, String clientName, String password, int pingInterval, int LoRaMsgSize);
         void loop();
     private:
         bool _isSetup = false;
         int _timers[2] = {0, 0};
         float _results[2];
         int _stopped[2] = {0, 0};
+        int _LoRaMsgSize = 0;
         void timerSet(int timer, bool stop);
         void timerReset(int timer=-1);
         String _serverName = "";

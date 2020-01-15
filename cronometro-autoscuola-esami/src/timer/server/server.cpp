@@ -20,7 +20,7 @@ TimerServer::TimerServer() :
 {  
 }
 
-void TimerServer::setup(String serverName, String clientName, String password, int pingInterval){
+void TimerServer::setup(String serverName, String clientName, String password, int pingInterval, int LoRaMsgSize){
     if(_isSetup){
         Serial.println("[Server] Already setup");
         return;
@@ -30,7 +30,10 @@ void TimerServer::setup(String serverName, String clientName, String password, i
     _clientName = clientName;
     _password = password;
     _pingInterval = pingInterval;
+    _LoRaMsgSize = LoRaMsgSize;
     
+    LoRa.setSpreadingFactor(6);
+    LoRa.setSignalBandwidth(250E3);
     _SerialBT.begin(_serverName.c_str());
     WiFi.mode(WIFI_AP);
     WiFi.softAP(_serverName.c_str());
@@ -126,13 +129,19 @@ void TimerServer::timerReset(int timer){
 }
 
 void TimerServer::receiveLoRa(){
-    if(LoRa.parsePacket() == 0) return;
+    if(LoRa.parsePacket(_LoRaMsgSize) == 0) return;
     String msg = "";
     while (LoRa.available()) msg += (char)LoRa.read();
     execMsg(msg);
-    LoRa.beginPacket();
-    LoRa.print(200);
-    LoRa.endPacket(true);
+    String response = getResponse();
+    char buff[_LoRaMsgSize];
+    for(int i=0; i < _LoRaMsgSize; i++){
+        buff[i] = '\0';
+    }
+    response.toCharArray(buff, _LoRaMsgSize);
+    LoRa.beginPacket(true);
+    LoRa.write((uint8_t*)buff, (size_t)_LoRaMsgSize);
+    LoRa.endPacket();
 };
 
 void TimerServer::clientPinged(int timer, bool stop){
@@ -305,6 +314,5 @@ String TimerServer::getResponse(){
         }
     }
     response += "&b=" + String(_matrixBrightness[_matrixBrightnessState]);
-    Serial.println(response);
     return response;
 }
