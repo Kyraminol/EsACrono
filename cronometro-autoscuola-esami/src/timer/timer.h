@@ -39,7 +39,6 @@ class Timer{
         bool _isServer = false;
         bool _isSetup = false;
         int _pingInterval = 3000;  // milliseconds
-        int _LoRaMsgSize = 40;
 
         String _serverName = "Cronometro";
         String _clientName = "T";

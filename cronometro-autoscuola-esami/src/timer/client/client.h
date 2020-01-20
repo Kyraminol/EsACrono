@@ -12,7 +12,7 @@
 class TimerClient{
     public:
         TimerClient();
-        void setup(String serverName, String clientName, String password, int pingInterval, int LoRaMsgSize);
+        void setup(String serverName, String clientName, String password, int pingInterval);
         void loop();
     private:
         bool _isSetup = false;
@@ -20,7 +20,6 @@ class TimerClient{
         String _serverName = "";
         String _password = "";
         int _pingInterval = 0;
-        int _LoRaMsgSize = 0;
         BluetoothSerial _SerialBT;
         int _t = 0;
         int _s = 0;
@@ -31,7 +30,6 @@ class TimerClient{
         AsyncUDP _udp;
         
         void sendRequest(String path);
-        void sendLoRa(String msg);
 
         int _lastPing = 0;
         void sendPing();
@@ -54,7 +52,6 @@ class TimerClient{
         static const int _msgSendInterval = 10;
         void sendMsgRaw(String msg, bool skipInterval = false);
         void sendUDP(String msg);
-        void receiveLoRa();
 
         void execMsg(const String& msg);
 };
