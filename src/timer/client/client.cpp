@@ -148,6 +148,7 @@ void TimerClient::sendMsgRaw(String msg, bool skipInterval){
     if(!skipInterval && _lastMsgSent > 0 && _lastMsgSent + _msgSendInterval > millis()) return;
     _lastMsgSent = millis();
     sendUDP(msg);
+    sendRequest(msg);
 }
 
 void TimerClient::sendPing(){

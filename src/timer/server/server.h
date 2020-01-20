@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 #include <BluetoothSerial.h>
-#include <ESPAsyncWebServer.h>
 #include <AsyncUDP.h>
+#include <WebServer.h>
 
 #include <FastLED_NeoMatrix.h>
 
@@ -38,7 +38,7 @@ class TimerServer{
         String _password = "";
         int _pingInterval = 0;
         BluetoothSerial _SerialBT;
-        AsyncWebServer _webserver;
+        WebServer _webserver;
         AsyncUDP _udp;
         void clientPinged(int timer, bool stop);
         int _pings[4] = {0, 0, 0, 0};

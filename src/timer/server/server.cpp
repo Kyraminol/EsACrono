@@ -5,7 +5,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <BluetoothSerial.h>
-#include <ESPAsyncWebServer.h>
 #include <heltec.h>
 #include <FastLED.h>
 
@@ -41,41 +40,23 @@ void TimerServer::setup(String serverName, String clientName, String password, i
         execMsg(msg);
         packet.print(getResponse() + '\0');
     });
-    _webserver.on("/api/v1/timer", HTTP_GET, [this](AsyncWebServerRequest *request){
-        if(!request->hasParam("t") && !request->hasParam("s")){
-            request->send(400);
-            return;
+    _webserver.on("/api/v1/timer", HTTP_GET, [this](){
+        String msg = "";
+        
+        for(int i = 0; i < _webserver.args(); i++){
+            if(i != 0)
+                msg += "&";
+            msg += _webserver.argName(i) + "=" + _webserver.arg(i);
         }
-        
-        int timer;
-        bool stop;
-        request->getParam("t")->value() == "0" ? timer = 0 : timer = 1;
-        request->getParam("s")->value() == "0" ? stop = false : stop = true;
-        
-        if(request->hasParam("p"))
-            clientPinged(timer, stop);
-        else if(request->hasParam("r"))
-            timerReset(timer);
-        else
-            timerSet(timer, stop);
 
-        AsyncWebServerResponse *response = request->beginResponse(200);
-        if(!request->hasParam("p")){
-            String params = "[HTTP][GET] ";
-            for(int i=0;i<request->params();i++){
-                AsyncWebParameter* p = request->getParam(i);
-                params += "&" + p->name() + "=" + p->value();
-            }
-            Serial.println(params);
-        }
-        
-        response->addHeader("Server", "TimerServer");
-        response->addHeader("Connection", "keep-alive");
-        request->send(response);
+        execMsg(msg);
+
+        _webserver.sendHeader("Connection", "keep-alive");
+        _webserver.sendHeader("Server", "TimerServer");
+        _webserver.send(200, "text/plain", getResponse());
     });
     _webserver.begin();
     FastLED.addLeds<NEOPIXEL,LEDMATRIX_DATA>(_matrixLeds, _matrixSize).setCorrection(TypicalLEDStrip);
-    FastLED.setMaxRefreshRate(100, true);
     _matrix.begin();
     _matrix.setBrightness(_matrixBrightness[_matrixBrightnessState]);
     _matrix.setTextWrap(false);
@@ -85,6 +66,7 @@ void TimerServer::setup(String serverName, String clientName, String password, i
 }
 
 void TimerServer::loop(){
+    _webserver.handleClient();
     pingCheck();
 
     if(digitalRead(SERVER_T0_START) == LOW) timerToggle(0);
