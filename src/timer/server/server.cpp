@@ -7,6 +7,7 @@
 #include <BluetoothSerial.h>
 #include <heltec.h>
 #include <FastLED.h>
+#include <SPIFFS.h>
 
 #include <Fonts/TomThumb.h>
 
@@ -30,6 +31,11 @@ void TimerServer::setup(String serverName, String clientName, String password, i
     _password = password;
     _pingInterval = pingInterval;
     
+  if(!SPIFFS.begin(true)){
+    Serial.println("An Error has occurred while mounting SPIFFS");
+  }
+
+ 
     _SerialBT.begin(_serverName.c_str());
     WiFi.mode(WIFI_AP);
     WiFi.softAP(_serverName.c_str());
@@ -40,6 +46,7 @@ void TimerServer::setup(String serverName, String clientName, String password, i
         execMsg(msg);
         packet.print(getResponse() + '\0');
     });
+    _webserver.serveStatic("/", SPIFFS, "/index.html");
     _webserver.on("/api/v1/timer", HTTP_GET, [this](){
         String msg = "";
         
