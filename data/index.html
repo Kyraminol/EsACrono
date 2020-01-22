@@ -51,16 +51,25 @@
   <div class="container">
 
     <div class="row">
-      <div class="col s12">
-        <div class="card-panel blue white-text">
-          <h3>Prima Prova</h3>
-          <a class="waves-effect waves-light btn-large toggle-button" data-timer="0">Start/Stop</a>
-          <h3>Seconda Prova</h3>
-          <a class="waves-effect waves-light btn-large toggle-button" data-timer="1">Start/Stop</a>
+      <div class="card-panel blue white-text">
+        <h4>1ª Prova</h4>
+        <div class="row">
+          <a class="waves-effect waves-light btn-large toggle-button green darken-2" data-timer="0">Start</a>
         </div>
       </div>
     </div>
+    <div class="row">
+      <div class="card-panel blue white-text">
+        <h4>2ª Prova</h4>
+        <div class="row">
+          <a class="waves-effect waves-light btn-large toggle-button green darken-2" data-timer="1">Start</a>
+        </div>
+      </div>
+    </div>
+
+
   </div>
+
 </main>
 </body>
 
@@ -80,13 +89,22 @@
 </script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    $('.toggle-button').on('click', function(){
+
+    const sendAjax = function(data){
       $.ajax({
         url: 'api/v1/timer',
         type: 'GET',
-        data: {t: parseInt($(this).data('timer'))},
+        data: data
+      }).then(r => {
+        console.log(r);
       });
+    };
+
+    $('.toggle-button').on('click', function(){
+      sendAjax({t: parseInt($(this).data('timer'))})
     });
+
+
   });
 </script>
 
