@@ -173,7 +173,7 @@ void TimerClient::execMsg(const String& msg){
     int timer = _t == HIGH ? 0 : 1;
     int stop = _s == HIGH ? 0 : 1;
 
-    _matrixStatus = getParam(params, "t" + String(timer))->value() == String(stop) ? false : true;
+    _matrixStatus = getParam(params, "s" + String(timer))->value() == String(stop) ? false : true;
 
     if(hasParam(params, "b"))
         _matrix.setBrightness(getParam(params, "b")->value().toInt());

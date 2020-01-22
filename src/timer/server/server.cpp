@@ -254,25 +254,29 @@ void TimerServer::execMsg(const String& msg){
     LinkedList<RequestParameter *> params([](RequestParameter *p){ delete p;});
     parseMsg(params, msg);
 
-    int timer = getParam(params, "t")->value() == "0" ? 0 : 1;
-
-    if(hasParam(params, "r")) timerReset(timer);
-    else {
-        if(hasParam(params, "s")){
-            bool stop = getParam(params, "s")->value() == "0" ? false : true;
-            if(hasParam(params, "p")) clientPinged(timer, stop); 
-            else timerSet(timer, stop);
-        } else timerToggle(timer);
+    if(hasParam(params, "t")){
+        int timer = getParam(params, "t")->value() == "0" ? 0 : 1;
+        if(hasParam(params, "r")) timerReset(timer);
+        else {
+            if(hasParam(params, "s")){
+                bool stop = getParam(params, "s")->value() == "0" ? false : true;
+                if(hasParam(params, "p")) clientPinged(timer, stop); 
+                else timerSet(timer, stop);
+            } else timerToggle(timer);
+        }
     }
+
     params.free();
 }
 
 String TimerServer::getResponse(){
-    String response = "";
+    String response = "b=" + String(_matrixBrightness[_matrixBrightnessState]);
+
     for(int i = 0; i < 2; i++){
         if(response != "")
             response += "&";
-        response += "t" + String(i) + "=";
+        String n = String(i);
+        response += "s" + n + "=";
         if(_timers[i] > 0)
             response += "0";
         else {
@@ -281,7 +285,16 @@ String TimerServer::getResponse(){
             else
                 response += "0";
         }
+
+        if(_timers[i] > 0){
+            response += "&t" + n + "=" + String(millis() - _timers[0]);
+            response += "&r" + n + "=1";
+        } else {
+            response += "&t" + n + "=" + String(_results[0]);
+            response += "&r" + n + "=0";
+        }
+
     }
-    response += "&b=" + String(_matrixBrightness[_matrixBrightnessState]);
+
     return response;
 }
