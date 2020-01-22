@@ -38,7 +38,7 @@ void TimerServer::setup(String serverName, String clientName, String password, i
  
     _SerialBT.begin(_serverName.c_str());
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(_serverName.c_str());
+    WiFi.softAP(_serverName.c_str(), NULL, 1, 0, 8);
     _udp.listen(404);
 
     _udp.onPacket([this](AsyncUDPPacket packet){
