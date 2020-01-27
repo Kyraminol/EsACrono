@@ -70,6 +70,8 @@ class TimerServer{
         void execMsg(const String& msg);
 
         String getResponse();
+
+        void idleReset();
 };
 
 #endif

@@ -81,6 +81,8 @@ void TimerServer::loop(){
     if(digitalRead(RESET_BUTTON) == LOW) timerReset();
     if(digitalRead(LEDMATRIX_BRIGHTNESS_BUTTON) == LOW) matrixBrightnessCicle();
 
+    idleReset();
+
     matrixRefresh();
 }
 
@@ -297,4 +299,11 @@ String TimerServer::getResponse(){
     }
 
     return response;
+}
+
+void TimerServer::idleReset(){
+    for(int i = 0; i < 2; i++){
+        if(_stopped[i] == 0) continue;
+        if(millis() - _stopped[i] > 300000) timerReset(i);
+    }
 }
