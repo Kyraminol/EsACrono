@@ -54,6 +54,11 @@ class TimerClient{
         void sendUDP(String msg);
 
         void execMsg(const String& msg);
+
+        bool _paired = false;
+        void waitPairing();
+        int _pairMinInterval = 3000;
+        int _lastPaired = 0;
 };
 
 #endif

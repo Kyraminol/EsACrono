@@ -41,6 +41,7 @@ void TimerClient::setup(String serverName, String clientName, String password, i
         execMsg(msg);
     });
     if(_r == HIGH){
+        waitPairing();
         _t = digitalRead(TIMER_SWITCH);
         _s = digitalRead(STOP_SWITCH);
 
@@ -179,4 +180,14 @@ void TimerClient::execMsg(const String& msg){
         _matrix.setBrightness(getParam(params, "b")->value().toInt());
 
     params.free();
+}
+
+void TimerClient::waitPairing(){
+    while(!_paired){
+        if(_lastPaired != 0 && millis() - _lastPaired > _pairMinInterval){_paired = true; continue;}
+        if(digitalRead(START_BUTTON) == LOW)
+            if(_lastPaired == 0) _lastPaired = millis();
+        else
+            _lastPaired = 0;
+    }
 }
