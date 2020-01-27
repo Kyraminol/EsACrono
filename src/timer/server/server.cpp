@@ -86,13 +86,14 @@ void TimerServer::loop(){
     matrixRefresh();
 }
 
-void TimerServer::timerSet(int timer, bool stop){
+void TimerServer::timerSet(int timer, bool stop, bool ignoreMinInterval){
     if(!stop){
         if(_timers[timer] == 0){
             _timers[timer] = millis();
             _stopped[timer] = 0;
         }
     } else {
+        if(!ignoreMinInterval && millis() - _timers[timer] < 5000) return;
         if(_timers[timer] > 0){
             _results[timer] = millis() - _timers[timer];
             _stopped[timer] = millis();
@@ -249,7 +250,7 @@ void TimerServer::matrixBrightnessCicle(){
 void TimerServer::timerToggle(int timer){
     if(_lastTimerToggle[timer] > 0 && _lastTimerToggle[timer] + _timerToggleInterval > millis()) return;
     _lastTimerToggle[timer] = millis();
-    _timers[timer] == 0 ? timerSet(timer, false) : timerSet(timer, true);
+    _timers[timer] == 0 ? timerSet(timer, false) : timerSet(timer, true, true);
 }
 
 void TimerServer::execMsg(const String& msg){

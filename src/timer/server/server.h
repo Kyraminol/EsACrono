@@ -31,7 +31,7 @@ class TimerServer{
         int _timers[2] = {0, 0};
         float _results[2];
         int _stopped[2] = {0, 0};
-        void timerSet(int timer, bool stop);
+        void timerSet(int timer, bool stop, bool ignoreMinInterval=false);
         void timerReset(int timer=-1);
         String _serverName = "";
         String _clientName = "";
