@@ -67,10 +67,6 @@ void TimerServer::setup(String serverName, String clientName, String password, i
     _matrix.begin();
     _matrix.setBrightness(_matrixBrightness[_matrixBrightnessState]);
     _matrix.setTextWrap(false);
-    _matrixRed = _matrix.Color(255, 0, 0);
-    _matrixGreen = _matrix.Color(0, 255, 0);
-    _matrixBlue = _matrix.Color(0, 0, 255);
-    _matrixYellow = _matrix.Color(255, 255, 0);
 }
 
 void TimerServer::loop(){
@@ -151,94 +147,54 @@ void TimerServer::matrixRefresh(){
     matrixSwitch == LOW ? _matrix.setFont() : _matrix.setFont(&TomThumb);
     _matrix.fillScreen(0);
 
-    String minutes = "0";
-    String seconds = "00";
-    String decimals = "0";
-    int color = _matrixBlue;
-
-    if(_timers[0] > 0 || _results[0] > 0){
-        color = _matrixRed;
-        int d =  0;
-        if(_timers[0] > 0)
-            d = (millis() - _timers[0]) / 100;
-        else
-            d = _results[0] / 100;
-        int s = d / 10;
-        int m = s / 60;
-        s -= m * 60;
-        if(m > 0 || s > 15 || (s > 14 && d > 1)) color = _matrixGreen;
-        minutes = String(m);
-        s < 10 ? seconds = "0" + String(s) : seconds = String(s);
-        decimals = String(d);
-        decimals = decimals.substring(decimals.length() - 1);
-    }
-    
-    _matrix.setTextColor(color);
-    if(matrixSwitch == LOW){
-        _matrix.setCursor(0, 0);
-        _matrix.print(minutes);
-        _matrix.setCursor(5, 0);
-        _matrix.print(":");
-        _matrix.setCursor(10, 0);
-        _matrix.print(seconds);
-        _matrix.setCursor(21, 0);
-        _matrix.print(":");
-        _matrix.setCursor(26, 0);
-        _matrix.print(decimals);
-        _pings[0] == 0 ? _matrix.fillRect(6, 6, 3, 2, _matrixRed) : _matrix.fillRect(6, 6, 3, 2, _matrixGreen);
-        if(_pings[0] > 0 && _waitPairing[0]) _matrix.fillRect(6, 6, 3, 2, _matrixYellow);
-        _pings[1] == 0 ? _matrix.fillRect(22, 6, 3, 2, _matrixRed) : _matrix.fillRect(22, 6, 3, 2, _matrixGreen);
-        if(_pings[1] > 0 && _waitPairing[1]) _matrix.fillRect(22, 6, 3, 2, _matrixYellow);
-    } else {
-        _matrix.setCursor(1, 6);
-        _matrix.print(seconds + ":" + decimals);
-        _pings[0] == 0 ? _matrix.drawFastHLine(2, 7, 4, _matrixRed) : _matrix.drawFastHLine(2, 7, 4, _matrixGreen);
-        _pings[1] == 0 ? _matrix.drawFastHLine(9, 7, 4, _matrixRed) : _matrix.drawFastHLine(9, 7, 4, _matrixGreen);
-        _matrix.drawFastVLine(15, 0, 8, _matrix.Color(0, 255, 255));
-        _matrix.drawFastVLine(16, 0, 8, _matrix.Color(0, 255, 255));
-    }
-
-    minutes = "0";
-    seconds = "00";
-    decimals = "0";
-    color = _matrixBlue;
-    if(_timers[1] > 0 || _results[1] > 0){
-        color = _matrixGreen;
+    for(int i=0; i < 2; i++){
+        int m = 0;
+        int s = 0;
         int d = 0;
-        if(_timers[1] > 0)
-            d = (millis() - _timers[1]) / 100;
-        else
-            d = _results[1] / 100;
-        int s = d / 10;
-        int m = s / 60;
-        s -= m * 60;
-        if(m > 0 || s > 25) color = _matrixRed;
-        minutes = String(m);
-        s < 10 ? seconds = "0" + String(s) : seconds = String(s);
-        decimals = String(d);
-        decimals = decimals.substring(decimals.length() - 1);
-    }
-    _matrix.setTextColor(color);
-    if(matrixSwitch == LOW){
-        _matrix.setCursor(0, 8);
-        _matrix.print(minutes);
-        _matrix.setCursor(5, 8);
-        _matrix.print(":");
-        _matrix.setCursor(10, 8);
-        _matrix.print(seconds);
-        _matrix.setCursor(21, 8);
-        _matrix.print(":");
-        _matrix.setCursor(26, 8);
-        _matrix.print(decimals);
-        _pings[2] == 0 ? _matrix.fillRect(6, 14, 3, 2, _matrixRed) : _matrix.fillRect(6, 14, 3, 2, _matrixGreen);
-        if(_pings[2] > 0 && _waitPairing[2]) _matrix.fillRect(6, 14, 3, 2, _matrixYellow);
-        _pings[3] == 0 ? _matrix.fillRect(22, 14, 3, 2, _matrixRed) : _matrix.fillRect(22, 14, 3, 2, _matrixGreen);
-        if(_pings[3] > 0 && _waitPairing[3]) _matrix.fillRect(22, 14, 3, 2, _matrixYellow);
-    } else {
-        _matrix.setCursor(18, 6);
-        _matrix.print(seconds + ":" + decimals);
-        _pings[2] == 0 ? _matrix.drawFastHLine(19, 7, 4, _matrixRed) : _matrix.drawFastHLine(19, 7, 4, _matrixGreen);
-        _pings[3] == 0 ? _matrix.drawFastHLine(26, 7, 4, _matrixRed) : _matrix.drawFastHLine(26, 7, 4, _matrixGreen);
+        int color = _matrixBlue;
+
+        if(_timers[i] > 0 || _results[i] > 0){
+            if(_timers[i] > 0)
+                d = (millis() - _timers[i]) / 100;
+            else
+                d = _results[i] / 100;
+            s = d / 10;
+            m = s / 60;
+            s -= m * 60;
+            if(i == 0)
+                color = m > 0 || s > 15 || (s > 14 && d > 1) ? _matrixGreen : _matrixRed;
+            else
+                color = m > 0 || s > 25 ? _matrixRed : _matrixGreen;
+        }
+
+        String temp = String(d);
+        String t[5] = {String(m), ":", s < 10 ? "0" + String(s) : String(s), ":", temp.substring(temp.length() - 1)};
+        _matrix.setTextColor(color);
+
+        if(matrixSwitch == LOW){
+            int x = _matrixBaseX[i];
+            int y = _matrixBaseY[i];
+            _matrix.setCursor(x+2, y);
+            for(int k = 0; k < 5; k++){
+                int cursor = _matrix.getCursorX();
+                if(k % 2 == 1){
+                    int statusColor = _matrixRed;
+                    int n = i == 0 ? 0 : 2;
+                    if(k == 3) n += 1;
+                    Serial.println(n);
+                    if(_pings[n] > 0)
+                        statusColor = _waitPairing[n] ? _matrixYellow : _matrixGreen;
+                    _matrix.drawFastHLine(cursor-1, y+7, 3, statusColor);
+                    _matrix.drawFastVLine(cursor, y+6, 2, statusColor);
+                }
+                _matrix.setCursor(cursor-2, y);
+                _matrix.print(t[k]);
+            }
+            int semaphoreColor = semaphoreStatus(i) ? _matrixGreen : _matrixRed;
+            _matrix.fillRect(_matrixSemaphoreX[i], y, 2, 8, semaphoreColor);
+        } else {
+
+        }
     }
 
     _matrix.show();
@@ -286,15 +242,8 @@ String TimerServer::getResponse(){
         if(response != "")
             response += "&";
         String n = String(i);
-        response += "s" + n + "=";
-        if(_timers[i] > 0)
-            response += "0";
-        else {
-            if(_results[i] == 0 || (millis() - _stopped[i]) > 8000)
-                response += "1";
-            else
-                response += "0";
-        }
+        String status = semaphoreStatus(i) ? "1" : "0";
+        response += "s" + n + "=" + status;
 
         if(_timers[i] > 0){
             response += "&t" + n + "=" + String(millis() - _timers[0]);
@@ -314,4 +263,10 @@ void TimerServer::idleReset(){
         if(_stopped[i] == 0) continue;
         if(millis() - _stopped[i] > 300000) timerReset(i);
     }
+}
+
+bool TimerServer::semaphoreStatus(int timer){
+    if(_timers[timer] > 0) return false;
+    if(_results[timer] == 0 || (millis() - _stopped[timer]) > 8000) return true;
+    return false;
 }

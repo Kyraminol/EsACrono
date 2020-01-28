@@ -45,10 +45,6 @@ class TimerServer{
         int _lastPingCheck = 0;
         void pingCheck();
 
-        int _matrixRed;
-        int _matrixGreen;
-        int _matrixBlue;
-        int _matrixYellow;
         static const int _matrixWidth = 32;
         static const int _matrixHeight = 16;
         static const int _matrixTileWidth = 1;
@@ -56,12 +52,19 @@ class TimerServer{
         static const int _matrixSize = _matrixWidth * _matrixHeight;
         CRGB _matrixLeds[_matrixSize];
         FastLED_NeoMatrix _matrix;
+        int _matrixRed = _matrix.Color(255, 0, 0);
+        int _matrixGreen = _matrix.Color(0, 255, 0);
+        int _matrixBlue = _matrix.Color(0, 0, 255);
+        int _matrixYellow = _matrix.Color(255, 255, 0);
+        int _matrixBaseX[2] = {4, 1};
+        int _matrixBaseY[2] = {0, 8};
+        int _matrixSemaphoreX[2] = {0, 30};
 
         static const int _matrixRefreshInterval = 20;
         int _lastMatrixRefresh = 0;
         void matrixRefresh();
-        int _matrixBrightnessState = 1;
-        int _matrixBrightness[5] = {5, 25, 50, 75, 90};
+        int _matrixBrightnessState = 0;
+        int _matrixBrightness[5] = {25, 75, 125, 175, 255};
         int _lastMatrixBrightnessCicle = 0;
         void matrixBrightnessCicle();
         int _lastTimerToggle[2] = {0, 0};
@@ -74,6 +77,7 @@ class TimerServer{
 
         void idleReset();
         bool _waitPairing[4] = {false, false, false, false};
+        bool semaphoreStatus(int timer);
 };
 
 #endif
