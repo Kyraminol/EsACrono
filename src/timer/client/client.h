@@ -57,8 +57,9 @@ class TimerClient{
         void execMsg(const String& msg);
 
         bool _paired = false;
-        void waitPairing();
+        void checkPairing();
         int _pairMinInterval = 3000;
+        int _unpairMaxInterval = 60000;
         int _lastPaired = 0;
 };
 

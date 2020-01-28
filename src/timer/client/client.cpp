@@ -59,7 +59,7 @@ void TimerClient::setup(String serverName, String clientName, String password, i
 
 void TimerClient::loop(){
     if(_r == HIGH){
-        if(!_paired) waitPairing();
+        checkPairing();
         if(_paired && digitalRead(START_BUTTON) == LOW){
             String msg = "";
             sendMsg(msg);
@@ -184,10 +184,19 @@ void TimerClient::execMsg(const String& msg){
     params.free();
 }
 
-void TimerClient::waitPairing(){
-    Serial.println(_lastPaired);
-    if(_lastPaired != 0 && millis() - _lastPaired > _pairMinInterval){_paired = true; return;}
-    if(digitalRead(START_BUTTON) == LOW)
+void TimerClient::checkPairing(){
+    int interval = _pairMinInterval;
+    int state = LOW;
+    if(_paired){
+        interval = _unpairMaxInterval;
+        state = HIGH;
+    }
+    if(_lastPaired != 0 && millis() - _lastPaired > interval){
+        _paired = _paired ? false : true;
+        _lastPaired = 0;
+        return;
+    }
+    if(digitalRead(START_BUTTON) == state)
         _lastPaired = 0;
     else
         if(_lastPaired == 0) _lastPaired = millis();
