@@ -41,7 +41,6 @@ void TimerClient::setup(String serverName, String clientName, String password, i
         execMsg(msg);
     });
     if(_r == HIGH){
-        waitPairing();
         _t = digitalRead(TIMER_SWITCH);
         _s = digitalRead(STOP_SWITCH);
 
@@ -60,11 +59,12 @@ void TimerClient::setup(String serverName, String clientName, String password, i
 
 void TimerClient::loop(){
     if(_r == HIGH){
-        if(digitalRead(START_BUTTON) == LOW){
+        if(!_paired) waitPairing();
+        if(_paired && digitalRead(START_BUTTON) == LOW){
             String msg = "";
             sendMsg(msg);
         }    
-        if(digitalRead(RESET_BUTTON) == LOW){
+        if(_paired && digitalRead(RESET_BUTTON) == LOW){
             String msg = "r=1";
             sendMsg(msg);
         }
@@ -156,6 +156,7 @@ void TimerClient::sendPing(){
     if(_lastPing > 0 && _lastPing + _pingInterval > millis()) return;
     _lastPing = millis();
     String msg = "p=1";
+    if(!_paired) msg += "&w=1";
     sendMsg(msg, true);
 }
 
@@ -163,6 +164,7 @@ void TimerClient::matrixRefresh(){
     if(_lastMatrixRefresh > 0 && _lastMatrixRefresh + _matrixRefreshInterval > millis()) return;
     _lastMatrixRefresh = millis();
     _matrixStatus ? _matrix.fillScreen(_matrixGreen) : _matrix.fillScreen(_matrixRed);
+    if(!_paired) _matrix.fillScreen(_matrixYellow);
 
     _matrix.show();
 }
@@ -183,11 +185,10 @@ void TimerClient::execMsg(const String& msg){
 }
 
 void TimerClient::waitPairing(){
-    while(!_paired){
-        if(_lastPaired != 0 && millis() - _lastPaired > _pairMinInterval){_paired = true; continue;}
-        if(digitalRead(START_BUTTON) == LOW)
-            if(_lastPaired == 0) _lastPaired = millis();
-        else
-            _lastPaired = 0;
-    }
+    Serial.println(_lastPaired);
+    if(_lastPaired != 0 && millis() - _lastPaired > _pairMinInterval){_paired = true; return;}
+    if(digitalRead(START_BUTTON) == LOW)
+        _lastPaired = 0;
+    else
+        if(_lastPaired == 0) _lastPaired = millis();
 }

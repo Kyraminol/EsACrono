@@ -44,6 +44,7 @@ class TimerClient{
         bool _matrixStatus = false;
         int _matrixGreen = _matrix.Color(0, 255, 0);
         int _matrixRed = _matrix.Color(255, 0, 0);
+        int _matrixYellow = _matrix.Color(255, 255, 0);
         void matrixRefresh();
 
         void sendMsg(String msg, bool skipInterval = false);

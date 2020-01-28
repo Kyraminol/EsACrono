@@ -70,6 +70,7 @@ void TimerServer::setup(String serverName, String clientName, String password, i
     _matrixRed = _matrix.Color(255, 0, 0);
     _matrixGreen = _matrix.Color(0, 255, 0);
     _matrixBlue = _matrix.Color(0, 0, 255);
+    _matrixYellow = _matrix.Color(255, 255, 0);
 }
 
 void TimerServer::loop(){
@@ -116,7 +117,7 @@ void TimerServer::timerReset(int timer){
     }
 }
 
-void TimerServer::clientPinged(int timer, bool stop){
+void TimerServer::clientPinged(int timer, bool stop, bool waiting){
     int n = timer == 0 ? 0 + stop : 2 + stop;
     if(_pings[n] == 0){
         String toPrint = "[CLIENT]";
@@ -125,6 +126,7 @@ void TimerServer::clientPinged(int timer, bool stop){
         Serial.println(toPrint + " Connected");
     }
     _pings[n] = millis();
+    _waitPairing[n] = waiting;
 }
 
 void TimerServer::pingCheck(){
@@ -184,7 +186,9 @@ void TimerServer::matrixRefresh(){
         _matrix.setCursor(26, 0);
         _matrix.print(decimals);
         _pings[0] == 0 ? _matrix.fillRect(6, 6, 3, 2, _matrixRed) : _matrix.fillRect(6, 6, 3, 2, _matrixGreen);
+        if(_pings[0] > 0 && _waitPairing[0]) _matrix.fillRect(6, 6, 3, 2, _matrixYellow);
         _pings[1] == 0 ? _matrix.fillRect(22, 6, 3, 2, _matrixRed) : _matrix.fillRect(22, 6, 3, 2, _matrixGreen);
+        if(_pings[1] > 0 && _waitPairing[1]) _matrix.fillRect(22, 6, 3, 2, _matrixYellow);
     } else {
         _matrix.setCursor(1, 6);
         _matrix.print(seconds + ":" + decimals);
@@ -227,7 +231,9 @@ void TimerServer::matrixRefresh(){
         _matrix.setCursor(26, 8);
         _matrix.print(decimals);
         _pings[2] == 0 ? _matrix.fillRect(6, 14, 3, 2, _matrixRed) : _matrix.fillRect(6, 14, 3, 2, _matrixGreen);
+        if(_pings[2] > 0 && _waitPairing[2]) _matrix.fillRect(6, 14, 3, 2, _matrixYellow);
         _pings[3] == 0 ? _matrix.fillRect(22, 14, 3, 2, _matrixRed) : _matrix.fillRect(22, 14, 3, 2, _matrixGreen);
+        if(_pings[3] > 0 && _waitPairing[3]) _matrix.fillRect(22, 14, 3, 2, _matrixYellow);
     } else {
         _matrix.setCursor(18, 6);
         _matrix.print(seconds + ":" + decimals);
@@ -263,7 +269,8 @@ void TimerServer::execMsg(const String& msg){
         else {
             if(hasParam(params, "s")){
                 bool stop = getParam(params, "s")->value() == "0" ? false : true;
-                if(hasParam(params, "p")) clientPinged(timer, stop); 
+                bool waiting = hasParam(params, "w") && getParam(params, "w")->value() == "1" ? true : false;
+                if(hasParam(params, "p")) clientPinged(timer, stop, waiting); 
                 else timerSet(timer, stop);
             } else timerToggle(timer);
         }

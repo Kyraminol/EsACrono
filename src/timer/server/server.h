@@ -40,7 +40,7 @@ class TimerServer{
         BluetoothSerial _SerialBT;
         WebServer _webserver;
         AsyncUDP _udp;
-        void clientPinged(int timer, bool stop);
+        void clientPinged(int timer, bool stop, bool waiting);
         int _pings[4] = {0, 0, 0, 0};
         int _lastPingCheck = 0;
         void pingCheck();
@@ -48,6 +48,7 @@ class TimerServer{
         int _matrixRed;
         int _matrixGreen;
         int _matrixBlue;
+        int _matrixYellow;
         static const int _matrixWidth = 32;
         static const int _matrixHeight = 16;
         static const int _matrixTileWidth = 1;
@@ -72,6 +73,7 @@ class TimerServer{
         String getResponse();
 
         void idleReset();
+        bool _waitPairing[4] = {false, false, false, false};
 };
 
 #endif
