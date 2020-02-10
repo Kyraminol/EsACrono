@@ -267,6 +267,7 @@ void TimerServer::idleReset(){
 
 bool TimerServer::semaphoreStatus(int timer){
     if(_timers[timer] > 0) return false;
+    if(_pings[timer] == 0 || _pings[timer + 1] == 0) return false;
     if(_results[timer] == 0 || (millis() - _stopped[timer]) > 8000) return true;
     return false;
 }
