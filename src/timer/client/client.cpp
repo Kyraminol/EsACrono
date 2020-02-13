@@ -11,7 +11,7 @@
 
 TimerClient::TimerClient() :
     _matrix(_matrixLeds, _matrixWidth, _matrixHeight,
-            NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG)
+            NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG)
 {  
 }
 
@@ -101,7 +101,6 @@ void TimerClient::loop(){
             }
         }
     }
-    matrixRefresh();
 }
 
 void TimerClient::sendRequest(String path){
@@ -165,6 +164,15 @@ void TimerClient::matrixRefresh(){
     _lastMatrixRefresh = millis();
     _matrixStatus ? _matrix.fillScreen(_matrixGreen) : _matrix.fillScreen(_matrixRed);
     if(!_paired) _matrix.fillScreen(_matrixYellow);
+    if(_lastPaired > 0){
+        int interval = _paired ? _unpairMaxInterval : _pairMinInterval;
+        int n = (millis() - _lastPaired) / (interval / _matrixSize);
+        for(int i = 0; i < n; i++){
+            int x = i % _matrixWidth;
+            int y = i / _matrixWidth;
+            _matrix.drawPixel(x, y, _paired ? _matrix.Color(255, 255, 0) : _matrix.Color(0, 255, 0));
+        }
+    }
 
     _matrix.show();
 }

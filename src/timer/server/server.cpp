@@ -181,7 +181,6 @@ void TimerServer::matrixRefresh(){
                     int statusColor = _matrixRed;
                     int n = i == 0 ? 0 : 2;
                     if(k == 3) n += 1;
-                    Serial.println(n);
                     if(_pings[n] > 0)
                         statusColor = _waitPairing[n] ? _matrixYellow : _matrixGreen;
                     _matrix.drawFastHLine(cursor-1, y+7, 3, statusColor);
@@ -267,7 +266,8 @@ void TimerServer::idleReset(){
 
 bool TimerServer::semaphoreStatus(int timer){
     if(_timers[timer] > 0) return false;
-    if(_pings[timer] == 0 || _pings[timer + 1] == 0) return false;
+    int t = timer == 0 ? 0 : 2;
+    if(_pings[t] == 0 || _pings[t + 1] == 0 || _waitPairing[t] || _waitPairing[t + 1]) return false;
     if(_results[timer] == 0 || (millis() - _stopped[timer]) > 8000) return true;
     return false;
 }
