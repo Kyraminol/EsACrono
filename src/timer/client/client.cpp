@@ -170,7 +170,7 @@ void TimerClient::matrixRefresh(){
         for(int i = 0; i < n; i++){
             int x = i % _matrixWidth;
             int y = i / _matrixWidth;
-            _matrix.drawPixel(x, y, _paired ? _matrix.Color(255, 255, 0) : _matrix.Color(0, 255, 0));
+            _matrix.drawPixel(x, y, _matrix.Color(0, 0, 255));
         }
     }
 
